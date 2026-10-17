@@ -1,768 +1,749 @@
-// =========================================
-// MIMI PIXEL WORLD - GAME ENGINE
-// =========================================
 
-// Masukkan URL project Supabase dan publishable/anon key milikmu.
-// Jangan pernah memasukkan service_role atau secret key ke frontend.
-const SUPABASE_URL = "https://clzaohchgcigvjmasgke.supabase.co";
-const SUPABASE_KEY = "sb_publishable_uWzC4hMSZcnQjCMQi3OH7w_Xr97SdnF";
+"use strict";
 
-const supabaseReady =
-  SUPABASE_URL.startsWith("https://") &&
-  SUPABASE_KEY !== "MASUKKAN_SUPABASE_PUBLISHABLE_ATAU_ANON_KEY" &&
-  Boolean(window.supabase);
+const $ = (id) => document.getElementById(id);
+const SAVE_KEY = "mimi_pixel_world_v1";
 
-const db = supabaseReady
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
-  : null;
+const PETS = {
+  cat: {
+    name: "Cat", price: 0, color: "#f5b8a1", light: "#ffe0c8",
+    dark: "#8e5668", eye: "#493047",
+    art: [
+      "................",
+      "....DD....DD....",
+      "...DLLD..DLLD...",
+      "...DLLLLLLLLD...",
+      "..DLLLLLLLLLLD..",
+      "..DLLLLLLLLLLD..",
+      ".DLLLLLLLLLLLLD.",
+      ".DLLLLLLLLLLLLD.",
+      ".DLLLELLLLLELLD.",
+      ".DLLLLLLLLLLLLD.",
+      ".DLLLLLNNLLLLLD.",
+      ".DLLLLLMMMLLLLD.",
+      "..DLLLLLLLLLLD..",
+      "...DLLLLLLLLD...",
+      "...D.D....D.D...",
+      "................"
+    ]
+  },
+  dog: {
+    name: "Puppy", price: 80, color: "#d9a16d", light: "#f4d4a2",
+    dark: "#885637", eye: "#382b37",
+    art: [
+      "................",
+      "...DD......DD...",
+      "..DLLD......DLD..",
+      "..DLLLD....DLLLD.",
+      "..DLLLLLLLLLLLLD.",
+      ".DLLLLLLLLLLLLLD.",
+      ".DLLLLLLLLLLLLLD.",
+      ".DLLLLLLLLLLLLLD.",
+      ".DLLLELLLLLELLLD.",
+      ".DLLLLLLLLLLLLLD.",
+      ".DLLLLLLNNLLLLLD.",
+      "..DLLLLLMMMLLLD..",
+      "..DLLLLLLLLLLLD..",
+      "...DLLLLLLLLLD...",
+      "...D.D....D.D....",
+      "................"
+    ]
+  },
+  bunny: {
+    name: "Bunny", price: 120, color: "#eacbe9", light: "#fff0fa",
+    dark: "#a879b1", eye: "#493047",
+    art: [
+      "...DD......DD...",
+      "...DLD....DLD...",
+      "...DLLD..DLLD...",
+      "...DLLD..DLLD...",
+      "...DLLLLLLLLD...",
+      "..DLLLLLLLLLLD..",
+      "..DLLLLLLLLLLD..",
+      ".DLLLLLLLLLLLLD.",
+      ".DLLLELLLLLELLD.",
+      ".DLLLLLLLLLLLLD.",
+      ".DLLLLLNNLLLLLD.",
+      ".DLLLLLMMMLLLLD.",
+      "..DLLLLLLLLLLD..",
+      "...DLLLLLLLLD...",
+      "...D.D....D.D...",
+      "................"
+    ]
+  },
+  slime: {
+    name: "Slime", price: 160, color: "#9ce8bc", light: "#d7ffe5",
+    dark: "#438b78", eye: "#294f50",
+    art: [
+      "................",
+      "................",
+      "......DD........",
+      ".....DLLD.......",
+      "....DLLLLD......",
+      "...DLLLLLLD.....",
+      "..DLLLLLLLLD....",
+      ".DLLLLLLLLLLD...",
+      ".DLLLLLLLLLLLD..",
+      ".DLLLELLLLLELD..",
+      ".DLLLLLLLLLLLD..",
+      ".DLLLLLMMMLLLD..",
+      "..DLLLLLLLLLD...",
+      "...DLLLLLLLD....",
+      "................",
+      "................"
+    ]
+  }
+};
 
-const $ = id => document.getElementById(id);
-const MAX = 100;
-const SAVE_KEY = "mimiWorldSaveV1";
-
-const species = [
-  { id: "cat", name: "Mimi the Cat", icon: "🐱", price: 0, description: "Manis, lembut, dan suka camilan.", color: "#fff1e7" },
-  { id: "dog", name: "Bobo the Dog", icon: "🐶", price: 80, description: "Sahabat ceria yang suka bermain.", color: "#dfb895" },
-  { id: "bunny", name: "Lulu the Bunny", icon: "🐰", price: 120, description: "Kelinci imut dengan telinga panjang.", color: "#f9e7f3" },
-  { id: "slime", name: "Mochi the Slime", icon: "🟢", price: 160, description: "Slime kecil yang selalu ceria.", color: "#b6f2d0" }
+const ACCESSORIES = [
+  { id: "bow", name: "Pink Bow", icon: "🎀", price: 35 },
+  { id: "crown", name: "Tiny Crown", icon: "👑", price: 60 },
+  { id: "flower", name: "Flower", icon: "🌸", price: 45 },
+  { id: "glasses", name: "Cool Glasses", icon: "🕶️", price: 55 },
+  { id: "halo", name: "Angel Halo", icon: "😇", price: 75 }
 ];
 
-const wardrobe = [
-  { id: "bow", name: "Pink Bow", icon: "🎀", price: 20, category: "accessories", description: "Pita pink yang menggemaskan." },
-  { id: "crown", name: "Royal Crown", icon: "👑", price: 75, category: "hats", description: "Mahkota untuk pet kerajaan." },
-  { id: "flower", name: "Flower Clip", icon: "🌸", price: 30, category: "accessories", description: "Jepit bunga yang manis." },
-  { id: "wizard", name: "Wizard Hat", icon: "🧙", price: 65, category: "hats", description: "Topi penyihir pixel." },
-  { id: "halo", name: "Angel Halo", icon: "😇", price: 90, category: "hats", description: "Lingkaran cahaya di kepala." },
-  { id: "heart", name: "Heart Glasses", icon: "🕶️", price: 45, category: "accessories", description: "Kacamata keren berbentuk hati." },
-  { id: "star", name: "Star Hairpin", icon: "⭐", price: 25, category: "accessories", description: "Aksesori bintang kecil." },
-  { id: "party", name: "Party Hat", icon: "🥳", price: 40, category: "hats", description: "Topi pesta penuh warna." }
+const DECORATIONS = [
+  { id: "plant", name: "Little Plant", icon: "🪴", price: 25 },
+  { id: "bear", name: "Teddy Bear", icon: "🧸", price: 50 },
+  { id: "cake", name: "Birthday Cake", icon: "🎂", price: 65 },
+  { id: "star", name: "Magic Star", icon: "⭐", price: 40 }
 ];
 
-const decorations = [
-  { id: "bed", name: "Cozy Bed", icon: "🛏️", price: 40, description: "Tempat tidur empuk." },
-  { id: "plant", name: "Little Plant", icon: "🪴", price: 25, description: "Tanaman kecil untuk kamar." },
-  { id: "lamp", name: "Moon Lamp", icon: "🌙", price: 55, description: "Lampu malam yang cantik." },
-  { id: "rug", name: "Pink Rug", icon: "🩷", price: 35, description: "Karpet lembut warna pink." },
-  { id: "books", name: "Bookshelf", icon: "📚", price: 60, description: "Rak buku mini." },
-  { id: "teddy", name: "Teddy Bear", icon: "🧸", price: 45, description: "Boneka teman Mimi." }
+const ROOMS = [
+  { id: "sky", name: "Sky Dream", icon: "☁️", color: "#a8c8ef" },
+  { id: "pink", name: "Pink Candy", icon: "🍓", color: "#e9b8d7" },
+  { id: "lavender", name: "Lavender Night", icon: "🌙", color: "#b9b1ef" },
+  { id: "mint", name: "Mint Garden", icon: "🌿", color: "#b2dfc2" }
 ];
 
-const questTemplates = [
-  { id: "feed", name: "Snack Time", description: "Beri makan pet 2 kali.", target: 2, reward: 15, xp: 5 },
-  { id: "play", name: "Play Together", description: "Main bersama pet 2 kali.", target: 2, reward: 20, xp: 8 },
-  { id: "clean", name: "Fresh & Clean", description: "Bersihkan pet 1 kali.", target: 1, reward: 10, xp: 5 }
-];
-
-function defaultState() {
+function freshState() {
   return {
-    name: "Mimi",
+    player: "Player",
+    petName: "Mimi",
     species: "cat",
-    energy: 70,
-    hunger: 70,
-    happiness: 80,
     coins: 100,
     level: 1,
     xp: 0,
-    ownedSpecies: ["cat"],
-    ownedWardrobe: [],
-    equipped: null,
-    ownedDecorations: [],
-    roomDecorations: [],
-    quests: {},
-    questDate: localDateKey()
+    energy: 80,
+    hunger: 25,
+    happy: 80,
+    clean: 85,
+    accessory: null,
+    decoration: "plant",
+    room: "sky",
+    ownedPets: ["cat"],
+    ownedAccessories: [],
+    ownedDecorations: ["plant"],
+    quests: { feed: false, play: false, clean: false },
+    sleepUntil: 0,
+    lastTick: Date.now(),
+    lastQuestDay: new Date().toDateString()
   };
 }
 
-function localDateKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
-function loadLocal() {
+function loadState() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return defaultState();
-    return { ...defaultState(), ...JSON.parse(raw) };
-  } catch {
-    return defaultState();
+    if (!raw) return freshState();
+
+    const saved = JSON.parse(raw);
+    const base = freshState();
+
+    return {
+      ...base,
+      ...saved,
+      quests: { ...base.quests, ...(saved.quests || {}) },
+      ownedPets: Array.isArray(saved.ownedPets) ? saved.ownedPets : ["cat"],
+      ownedAccessories: Array.isArray(saved.ownedAccessories) ? saved.ownedAccessories : [],
+      ownedDecorations: Array.isArray(saved.ownedDecorations) ? saved.ownedDecorations : ["plant"]
+    };
+  } catch (error) {
+    console.warn("Could not load save:", error);
+    return freshState();
   }
 }
 
-let state = loadLocal();
-let currentUser = null;
-let sleeping = false;
-let sleepStart = 0;
-let sleepEnergyStart = 0;
-let sleepInterval = null;
-let activeShopCategory = "hats";
-let authMode = "login";
-let saving = false;
-let saveAgain = false;
-let lastSave = 0;
+let state = loadState();
+let shopCategory = "accessories";
+let sleepTimer = null;
+let noticeTimer = null;
 
-function clamp(n) {
-  return Math.max(0, Math.min(MAX, Math.round(n)));
+function saveState() {
+  try {
+    state.lastTick = Date.now();
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.warn("Could not save game:", error);
+    showNotice("Couldn't save. Check your browser storage.");
+  }
 }
 
-function notify(message) {
+function clamp(value, min = 0, max = 100) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function showNotice(message) {
   $("notice").textContent = message;
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => {
+    $("notice").textContent = "Your little world is waiting for you ♡";
+  }, 3000);
 }
 
-function persistLocal() {
-  localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-}
-
-function saveGame() {
-  persistLocal();
-
-  if (!db || !currentUser) return;
-
-  // Hindari terlalu banyak permintaan saat status berubah cepat.
-  if (Date.now() - lastSave < 800) {
-    saveAgain = true;
-    return;
-  }
-
-  if (saving) {
-    saveAgain = true;
-    return;
-  }
-
-  saving = true;
-  lastSave = Date.now();
-
-  db.from("pet_saves").upsert({
-    user_id: currentUser.id,
-    save_data: state,
-    updated_at: new Date().toISOString()
-  }, { onConflict: "user_id" })
-    .then(({ error }) => {
-      if (error) {
-        console.error("Cloud save error:", error.message);
-        $("cloudStatus").textContent = "Local Save";
-      } else {
-        $("cloudStatus").textContent = "☁ Cloud Saved";
-      }
-    })
-    .finally(() => {
-      saving = false;
-      if (saveAgain) {
-        saveAgain = false;
-        setTimeout(saveGame, 900);
-      }
-    });
-}
-
-function gainXP(amount) {
+function addXP(amount) {
   state.xp += amount;
 
-  while (state.xp >= state.level * 20) {
-    state.xp -= state.level * 20;
+  while (state.xp >= 100) {
+    state.xp -= 100;
     state.level++;
-    state.coins += 10;
-    notify(`Level up! Kamu mencapai level ${state.level}! 🎉`);
+    state.coins += 25;
+    showNotice(`LEVEL UP! You're now level ${state.level}! +25 coins`);
   }
 }
 
-function refreshDailyQuests() {
-  const today = localDateKey();
+function drawPet(species) {
+  const pet = PETS[species] || PETS.cat;
+  const svgGroup = $("petPixels");
+  svgGroup.innerHTML = "";
 
-  if (state.questDate !== today) {
-    state.questDate = today;
-    state.quests = {};
-  }
+  const svgNS = "http://www.w3.org/2000/svg";
 
-  for (const q of questTemplates) {
-    if (!state.quests[q.id]) {
-      state.quests[q.id] = { progress: 0, claimed: false };
-    }
-  }
+  pet.art.forEach((line, y) => {
+    [...line].forEach((pixel, x) => {
+      if (pixel === ".") return;
+
+      const rect = document.createElementNS(svgNS, "rect");
+      rect.setAttribute("x", x);
+      rect.setAttribute("y", y);
+      rect.setAttribute("width", "1");
+      rect.setAttribute("height", "1");
+
+      let fill = pet.color;
+
+      if (pixel === "D") fill = pet.dark;
+      if (pixel === "L") fill = pet.color;
+      if (pixel === "E") fill = pet.eye;
+      if (pixel === "N") fill = "#ff8ca6";
+      if (pixel === "M") fill = "#a95077";
+
+      rect.setAttribute("fill", fill);
+      svgGroup.appendChild(rect);
+    });
+  });
+
+  // Small highlight pixels give the sprite more depth.
+  const highlights = species === "slime"
+    ? [[5, 7], [6, 7], [5, 8]]
+    : [[4, 6], [5, 6], [10, 6]];
+
+  highlights.forEach(([x, y]) => {
+    const rect = document.createElementNS(svgNS, "rect");
+    rect.setAttribute("x", x);
+    rect.setAttribute("y", y);
+    rect.setAttribute("width", "1");
+    rect.setAttribute("height", "1");
+    rect.setAttribute("fill", pet.light);
+    svgGroup.appendChild(rect);
+  });
 }
 
-function addQuestProgress(id, amount = 1) {
-  refreshDailyQuests();
-
-  const quest = questTemplates.find(q => q.id === id);
-  const progress = state.quests[id];
-
-  if (!quest || !progress || progress.claimed) return;
-
-  progress.progress = Math.min(quest.target, progress.progress + amount);
+function isSleeping() {
+  return state.sleepUntil > Date.now();
 }
 
-function renderStats() {
-  $("petName").textContent = state.name;
-  $("petNameHeading").textContent = state.name;
-  $("speciesLabel").textContent =
-    `${species.find(s => s.id === state.species)?.icon || "🐾"} ` +
-    `${species.find(s => s.id === state.species)?.name || "Pet"}`;
+function updateRoom() {
+  const room = ROOMS.find(item => item.id === state.room) || ROOMS[0];
+  $("scene").style.background =
+    `linear-gradient(${room.color} 0%, #d6d7ed 73%, #c1b0df 73%)`;
 
-  $("level").textContent = state.level;
+  const decor = DECORATIONS.find(item => item.id === state.decoration);
+  $("roomDeco").textContent = decor ? decor.icon : "🪴";
+}
+
+function updateStats() {
+  const values = {
+    energy: state.energy,
+    hunger: state.hunger,
+    happy: state.happy,
+    clean: state.clean
+  };
+
+  Object.entries(values).forEach(([key, value]) => {
+    const rounded = Math.round(clamp(value));
+    $(`${key}Value`).textContent = rounded;
+    $(`${key}Bar`).style.width = `${rounded}%`;
+  });
+
   $("coins").textContent = state.coins;
-  $("xpText").textContent = `${state.xp} / ${state.level * 20} XP`;
+  $("level").textContent = state.level;
+  $("levelBadge").textContent = state.level;
+  $("xpText").textContent = `${state.xp} / 100 XP`;
+  $("xpBar").style.width = `${state.xp}%`;
 
-  $("energyValue").textContent = `${state.energy}%`;
-  $("hungerValue").textContent = `${state.hunger}%`;
-  $("happyValue").textContent = `${state.happiness}%`;
+  $("helloName").textContent = state.player;
+  $("petNameHeading").textContent = state.petName;
+  $("petTitle").textContent = `${state.petName} the ${PETS[state.species].name}`;
 
-  $("energyBar").style.width = `${state.energy}%`;
-  $("hungerBar").style.width = `${state.hunger}%`;
-  $("happyBar").style.width = `${state.happiness}%`;
+  drawPet(state.species);
 
-  $("profileLevel").textContent = state.level;
-  $("profileXP").textContent = `${state.xp} XP`;
-  $("ownedCount").textContent =
-    state.ownedWardrobe.length + state.ownedDecorations.length;
+  const sprite = $("petSprite");
+  sprite.className = `pet-sprite ${state.species}`;
+  sprite.classList.toggle("sleeping", isSleeping());
 
-  const completed = questTemplates.filter(q =>
-    state.quests[q.id]?.claimed
-  ).length;
+  $("zzz").hidden = !isSleeping();
+  $("sleepPanel").hidden = !isSleeping();
 
-  $("questCount").textContent = `${completed}/3`;
+  $("feedBtn").disabled = isSleeping();
+  $("playBtn").disabled = isSleeping();
+  $("cleanBtn").disabled = isSleeping();
+  $("sleepBtn").disabled = isSleeping();
 
-  let mood = "Happy";
-  if (state.energy < 25) mood = "Sleepy";
-  else if (state.hunger < 25) mood = "Hungry";
-  else if (state.happiness < 30) mood = "Lonely";
-  else if (state.happiness >= 90) mood = "Super happy";
+  if (isSleeping()) {
+    $("mood").textContent = "SLEEPING...";
+  } else if (state.hunger >= 75) {
+    $("mood").textContent = "HUNGRY!";
+  } else if (state.energy < 25) {
+    $("mood").textContent = "SLEEPY...";
+  } else if (state.happy < 30) {
+    $("mood").textContent = "LONELY...";
+  } else if (state.clean < 25) {
+    $("mood").textContent = "MESSY!";
+  } else {
+    $("mood").textContent = "HAPPY!";
+  }
 
-  $("moodText").textContent = sleeping
-    ? "Mimi is sleeping peacefully... 🌙"
-    : `Mood: ${mood}`;
-
-  $("petSprite").className = `pet-sprite ${state.species}`;
-  $("petSprite").classList.toggle("sleeping", sleeping);
-  $("zzz").hidden = !sleeping;
-
-  const accessory = wardrobe.find(i => i.id === state.equipped);
-  $("petAccessory").textContent = accessory ? accessory.icon : "";
-
-  $("feedBtn").disabled = sleeping;
-  $("playBtn").disabled = sleeping;
-  $("cleanBtn").disabled = sleeping;
-  $("sleepBtn").disabled = sleeping;
-
-  renderRoomDecor();
-  persistLocal();
-}
-
-function renderAll() {
-  refreshDailyQuests();
-  renderStats();
-  renderPets();
-  renderWardrobe();
-  renderRoomCatalog();
-  renderRoomDecor();
   renderQuests();
-  updateResetText();
+  updateRoom();
 }
 
-function performAction(action) {
-  if (sleeping) return;
+function renderQuests() {
+  const keys = ["feed", "play", "clean"];
+  const completed = keys.filter(key => state.quests[key]).length;
 
-  if (action === "feed") {
-    if (state.coins < 3) return notify("Koin kamu belum cukup! 🪙");
-    if (state.hunger >= 100) return notify("Mimi sudah kenyang! 🍓");
+  $("questCount").textContent = `${completed} / 3`;
 
-    state.coins -= 3;
-    state.hunger = clamp(state.hunger + 25);
-    state.happiness = clamp(state.happiness + 5);
-    addQuestProgress("feed");
-    gainXP(3);
-    notify("Mimi menikmati camilannya! 🍓");
+  keys.forEach(key => {
+    $(`quest${key[0].toUpperCase()}${key.slice(1)}`).textContent =
+      state.quests[key] ? "✓" : "○";
+  });
+}
+
+function resetDailyQuestsIfNeeded() {
+  const today = new Date().toDateString();
+
+  if (state.lastQuestDay !== today) {
+    state.lastQuestDay = today;
+    state.quests = { feed: false, play: false, clean: false };
+  }
+}
+
+function completeQuest(key) {
+  if (state.quests[key]) return;
+
+  state.quests[key] = true;
+  const done = Object.values(state.quests).every(Boolean);
+
+  if (done) {
+    state.coins += 40;
+    addXP(25);
+    showNotice("All daily quests complete! +40 coins and +25 XP!");
+  } else {
+    showNotice("Quest completed! Keep going!");
+  }
+}
+
+function care(action) {
+  if (isSleeping()) {
+    showNotice("Your pet is sleeping. Let them rest!");
+    return;
   }
 
-  if (action === "play") {
-    if (state.energy < 10) return notify("Energi Mimi terlalu rendah. Ajak tidur dulu!");
-    state.energy = clamp(state.energy - 12);
-    state.hunger = clamp(state.hunger - 8);
-    state.happiness = clamp(state.happiness + 20);
-    state.coins += 2;
-    addQuestProgress("play");
-    gainXP(5);
-    notify("Wah, Mimi senang bermain! 🎾 +2 koin");
+  switch (action) {
+    case "feed":
+      if (state.hunger <= 0) {
+        showNotice("Your pet is already full! ♡");
+        return;
+      }
+      state.hunger = clamp(state.hunger - 30);
+      state.energy = clamp(state.energy + 5);
+      state.coins += 3;
+      addXP(10);
+      completeQuest("feed");
+      showNotice("Nom nom! Your pet enjoyed the snack. +3 coins");
+      break;
+
+    case "play":
+      if (state.energy < 12) {
+        showNotice("Too tired to play. Let your pet rest first!");
+        return;
+      }
+      state.energy = clamp(state.energy - 12);
+      state.hunger = clamp(state.hunger + 8);
+      state.happy = clamp(state.happy + 20);
+      state.coins += 5;
+      addXP(15);
+      completeQuest("play");
+      showNotice("What a fun time! +5 coins and +15 XP");
+      break;
+
+    case "clean":
+      if (state.clean >= 100) {
+        showNotice("Already squeaky clean! ✨");
+        return;
+      }
+      state.clean = clamp(state.clean + 35);
+      state.happy = clamp(state.happy + 5);
+      addXP(10);
+      completeQuest("clean");
+      showNotice("Fresh and clean! Your pet looks adorable.");
+      break;
   }
 
-  if (action === "clean") {
-    state.happiness = clamp(state.happiness + 10);
-    state.coins += 1;
-    addQuestProgress("clean");
-    gainXP(2);
-    notify("Mimi sekarang bersih dan wangi! 🫧 +1 koin");
-  }
-
-  renderAll();
-  saveGame();
+  saveState();
+  updateStats();
 }
 
 function startSleep() {
-  if (sleeping) return;
+  if (isSleeping()) return;
 
-  sleeping = true;
-  sleepStart = Date.now();
-  sleepEnergyStart = state.energy;
+  state.sleepUntil = Date.now() + 30000;
+  saveState();
+  updateStats();
+  showNotice("Sweet dreams! Energy will recover gradually.");
 
-  $("sleepPanel").hidden = false;
-  $("sceneMessage").textContent = "Sweet dreams, Mimi... zZz";
-  notify("Mimi sedang tidur. Energinya bertambah perlahan.");
-
-  sleepInterval = setInterval(updateSleep, 250);
+  if (sleepTimer) clearInterval(sleepTimer);
+  sleepTimer = setInterval(updateSleep, 250);
   updateSleep();
 }
 
 function updateSleep() {
-  if (!sleeping) return;
+  const remaining = Math.max(0, state.sleepUntil - Date.now());
+  const duration = 30000;
+  const progress = clamp(((duration - remaining) / duration) * 100);
 
-  const elapsed = Math.min(30, (Date.now() - sleepStart) / 1000);
-  const progress = elapsed / 30;
+  $("sleepCountdown").textContent =
+    `00:${String(Math.ceil(remaining / 1000)).padStart(2, "0")}`;
+  $("sleepProgress").style.width = `${progress}%`;
 
-  state.energy = clamp(sleepEnergyStart + (100 - sleepEnergyStart) * progress);
-
-  $("sleepCountdown").textContent = `${Math.ceil(30 - elapsed)}s`;
-  $("sleepProgress").style.width = `${progress * 100}%`;
-
-  renderStats();
-
-  if (elapsed >= 30) endSleep(true);
+  if (remaining <= 0) {
+    wakePet(false);
+  } else {
+    // Gradual recovery: 100 energy over 30 seconds.
+    const elapsed = 250;
+    state.energy = clamp(state.energy + (100 / duration) * elapsed);
+    state.happy = clamp(state.happy + (2 / duration) * elapsed);
+    updateStats();
+  }
 }
 
-function endSleep(completed = false) {
-  if (!sleeping) return;
-
-  clearInterval(sleepInterval);
-  sleepInterval = null;
-
-  if (!completed) {
-    const elapsed = Math.min(30, (Date.now() - sleepStart) / 1000);
-    const progress = elapsed / 30;
-    state.energy = clamp(sleepEnergyStart + (100 - sleepEnergyStart) * progress);
-  } else {
-    state.energy = 100;
-    state.happiness = clamp(state.happiness + 5);
-    gainXP(5);
+function wakePet(early) {
+  if (sleepTimer) {
+    clearInterval(sleepTimer);
+    sleepTimer = null;
   }
 
-  sleeping = false;
-  $("sleepPanel").hidden = true;
-  $("sleepProgress").style.width = "0%";
-  $("sceneMessage").textContent = "Let's have a lovely day!";
+  const wasSleeping = state.sleepUntil > 0;
+  state.sleepUntil = 0;
 
-  notify(completed
-    ? "Mimi bangun segar dengan energi penuh! ☀️"
-    : "Mimi dibangunkan lebih awal. ☀️");
+  if (wasSleeping && !early) {
+    state.energy = 100;
+    state.happy = clamp(state.happy + 5);
+    addXP(10);
+    showNotice("Good morning! Your pet is fully rested. +10 XP");
+  } else if (early) {
+    showNotice("Your pet woke up early. Take it easy!");
+  }
 
-  renderAll();
-  saveGame();
+  saveState();
+  updateStats();
 }
 
 function renderPets() {
-  $("petCatalog").innerHTML = species.map(p => {
-    const owned = state.ownedSpecies.includes(p.id);
-    const active = state.species === p.id;
+  $("petCatalog").innerHTML = "";
 
-    return `
-      <article class="item-card">
-        <div class="item-art">${p.icon}</div>
-        <h3>${p.name}</h3>
-        <p>${p.description}</p>
-        <div class="item-meta"><span>${active ? "Your pet" : "Pet species"}</span><b>${owned ? "✓" : `🪙 ${p.price}`}</b></div>
-        <button data-species="${p.id}" ${active ? "disabled" : ""}>
-          ${active ? "Currently Selected" : owned ? "Choose Pet" : "Unlock Pet"}
-        </button>
-      </article>`;
-  }).join("");
+  Object.entries(PETS).forEach(([id, pet]) => {
+    const owned = state.ownedPets.includes(id);
+    const selected = state.species === id;
 
-  $("petCatalog").querySelectorAll("[data-species]").forEach(btn => {
-    btn.addEventListener("click", () => chooseSpecies(btn.dataset.species));
+    const card = document.createElement("article");
+    card.className = `pet-card${selected ? " selected" : ""}`;
+
+    const preview = document.createElement("div");
+    preview.className = "pet-preview";
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 16 16");
+    svg.setAttribute("shape-rendering", "crispEdges");
+
+    pet.art.forEach((line, y) => {
+      [...line].forEach((pixel, x) => {
+        if (pixel === ".") return;
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", x);
+        rect.setAttribute("y", y);
+        rect.setAttribute("width", 1);
+        rect.setAttribute("height", 1);
+        rect.setAttribute("fill",
+          pixel === "D" ? pet.dark :
+          pixel === "E" ? pet.eye :
+          pixel === "N" ? "#ff8ca6" :
+          pixel === "M" ? "#a95077" : pet.color);
+        svg.appendChild(rect);
+      });
+    });
+
+    preview.appendChild(svg);
+
+    const title = document.createElement("h3");
+    title.textContent = pet.name;
+
+    const description = document.createElement("p");
+    description.textContent = selected ? "Your current friend" :
+      owned ? "Ready to play" : `${pet.price} coins`;
+
+    const button = document.createElement("button");
+    button.className = selected ? "small-btn" : "primary-btn";
+    button.textContent = selected ? "SELECTED" : owned ? "CHOOSE PET" : `🪙 ${pet.price}`;
+
+    button.disabled = selected;
+
+    button.addEventListener("click", () => {
+      if (!owned) {
+        if (state.coins < pet.price) {
+          showNotice("Not enough coins yet. Keep caring for your pet!");
+          return;
+        }
+        state.coins -= pet.price;
+        state.ownedPets.push(id);
+      }
+
+      state.species = id;
+      state.accessory = null;
+      saveState();
+      renderPets();
+      updateStats();
+      showNotice(`Meet your ${pet.name}! ♡`);
+    });
+
+    card.append(preview, title, description, button);
+    $("petCatalog").appendChild(card);
   });
 }
 
-function chooseSpecies(id) {
-  const p = species.find(s => s.id === id);
-  if (!p) return;
+function renderShop() {
+  $("shopGrid").innerHTML = "";
 
-  if (!state.ownedSpecies.includes(id)) {
-    if (state.coins < p.price) return notify("Koin kamu belum cukup untuk membuka pet ini.");
-    state.coins -= p.price;
-    state.ownedSpecies.push(id);
-  }
+  const items = shopCategory === "accessories" ? ACCESSORIES : DECORATIONS;
+  const ownedList = shopCategory === "accessories"
+    ? state.ownedAccessories
+    : state.ownedDecorations;
 
-  state.species = id;
-  notify(`${p.name} sekarang menjadi temanmu! 🐾`);
-  renderAll();
-  saveGame();
-}
+  items.forEach(item => {
+    const owned = ownedList.includes(item.id);
+    const equipped = shopCategory === "accessories"
+      ? state.accessory === item.id
+      : state.decoration === item.id;
 
-function renderWardrobe() {
-  const items = wardrobe.filter(item => item.category === activeShopCategory);
+    const card = document.createElement("article");
+    card.className = `shop-card${owned ? " owned" : ""}`;
 
-  $("wardrobeCatalog").innerHTML = items.map(item => {
-    const owned = state.ownedWardrobe.includes(item.id);
-    const equipped = state.equipped === item.id;
+    const icon = document.createElement("div");
+    icon.className = "item-icon";
+    icon.textContent = item.icon;
 
-    return `
-      <article class="item-card">
-        <div class="item-art">${item.icon}</div>
-        <h3>${item.name}</h3>
-        <p>${item.description}</p>
-        <div class="item-meta"><span>Accessory</span><b>${owned ? "Owned" : `🪙 ${item.price}`}</b></div>
-        <button data-item="${item.id}" class="${equipped ? "equipped" : ""}">
-          ${equipped ? "✓ Equipped" : owned ? "Wear Item" : "Buy Item"}
-        </button>
-      </article>`;
-  }).join("");
+    const title = document.createElement("h3");
+    title.textContent = item.name;
 
-  $("wardrobeCatalog").querySelectorAll("[data-item]").forEach(btn => {
-    btn.addEventListener("click", () => useWardrobeItem(btn.dataset.item));
+    const price = document.createElement("p");
+    price.className = "price";
+    price.textContent = owned ? (equipped ? "EQUIPPED ✓" : "OWNED") : `🪙 ${item.price}`;
+
+    const button = document.createElement("button");
+    button.className = owned ? "small-btn" : "primary-btn";
+    button.textContent = equipped ? "EQUIPPED" : owned ? "EQUIP" : "BUY";
+    button.disabled = equipped;
+
+    button.addEventListener("click", () => {
+      if (!owned) {
+        if (state.coins < item.price) {
+          showNotice("Not enough coins. Complete quests to earn more!");
+          return;
+        }
+
+        state.coins -= item.price;
+        ownedList.push(item.id);
+      }
+
+      if (shopCategory === "accessories") {
+        state.accessory = item.id;
+      } else {
+        state.decoration = item.id;
+      }
+
+      saveState();
+      renderShop();
+      updateStats();
+      showNotice(`${item.name} is ready! ✨`);
+    });
+
+    card.append(icon, title, price, button);
+    $("shopGrid").appendChild(card);
   });
 }
 
-function useWardrobeItem(id) {
-  const item = wardrobe.find(i => i.id === id);
-  if (!item) return;
+function renderRooms() {
+  $("roomGrid").innerHTML = "";
 
-  if (state.equipped === id) {
-    state.equipped = null;
-    notify("Aksesori dilepas.");
-  } else {
-    if (!state.ownedWardrobe.includes(id)) {
-      if (state.coins < item.price) return notify("Koin kamu belum cukup!");
-      state.coins -= item.price;
-      state.ownedWardrobe.push(id);
-    }
-    state.equipped = id;
-    notify(`${item.name} berhasil dipasangkan! 🎀`);
-  }
+  ROOMS.forEach(room => {
+    const card = document.createElement("article");
+    card.className = `room-card${state.room === room.id ? " selected" : ""}`;
 
-  renderAll();
-  saveGame();
-}
+    const preview = document.createElement("div");
+    preview.className = "room-preview";
+    preview.style.background = room.color;
+    preview.textContent = room.icon;
 
-function renderRoomCatalog() {
-  $("roomCatalog").innerHTML = decorations.map(item => {
-    const owned = state.ownedDecorations.includes(item.id);
-    const placed = state.roomDecorations.includes(item.id);
+    const title = document.createElement("h3");
+    title.textContent = room.name;
 
-    return `
-      <article class="item-card">
-        <div class="item-art">${item.icon}</div>
-        <h3>${item.name}</h3>
-        <p>${item.description}</p>
-        <div class="item-meta"><span>Decoration</span><b>${owned ? "Owned" : `🪙 ${item.price}`}</b></div>
-        <button data-decor="${item.id}" class="${placed ? "equipped" : ""}">
-          ${placed ? "✓ In Room" : owned ? "Place / Remove" : "Buy & Place"}
-        </button>
-      </article>`;
-  }).join("");
+    const button = document.createElement("button");
+    button.className = state.room === room.id ? "small-btn" : "primary-btn";
+    button.textContent = state.room === room.id ? "CURRENT ROOM" : "USE ROOM";
+    button.disabled = state.room === room.id;
 
-  $("roomCatalog").querySelectorAll("[data-decor]").forEach(btn => {
-    btn.addEventListener("click", () => toggleDecoration(btn.dataset.decor));
+    button.addEventListener("click", () => {
+      state.room = room.id;
+      saveState();
+      renderRooms();
+      updateStats();
+      showNotice(`${room.name} is now your room!`);
+    });
+
+    card.append(preview, title, button);
+    $("roomGrid").appendChild(card);
   });
 }
 
-function toggleDecoration(id) {
-  const item = decorations.find(i => i.id === id);
-  if (!item) return;
-
-  if (!state.ownedDecorations.includes(id)) {
-    if (state.coins < item.price) return notify("Koin kamu belum cukup!");
-    state.coins -= item.price;
-    state.ownedDecorations.push(id);
-    state.roomDecorations.push(id);
-    notify(`${item.name} dibeli dan dipasang! 🪴`);
-  } else if (state.roomDecorations.includes(id)) {
-    state.roomDecorations = state.roomDecorations.filter(x => x !== id);
-    notify(`${item.name} disimpan di koleksi.`);
-  } else {
-    state.roomDecorations.push(id);
-    notify(`${item.name} dipasang di kamar!`);
-  }
-
-  renderAll();
-  saveGame();
-}
-
-function renderRoomDecor() {
-  $("roomDecor").innerHTML = state.roomDecorations.map(id => {
-    const item = decorations.find(d => d.id === id);
-    return item ? `<span title="${item.name}">${item.icon}</span>` : "";
-  }).join("");
-
-  $("roomItems").innerHTML = state.roomDecorations.map(id => {
-    const item = decorations.find(d => d.id === id);
-    return item ? `<span title="${item.name}">${item.icon}</span>` : "";
-  }).join("");
-}
-
-function renderQuests() {
-  refreshDailyQuests();
-
-  $("questCatalog").innerHTML = questTemplates.map(q => {
-    const progress = state.quests[q.id];
-    const done = progress.progress >= q.target;
-    const percent = Math.min(100, progress.progress / q.target * 100);
-
-    return `
-      <article class="quest-card">
-        <div class="quest-top">
-          <h3>${q.name}</h3>
-          <b>🪙 ${q.reward} · ⭐ ${q.xp} XP</b>
-        </div>
-        <p>${q.description}</p>
-        <div class="bar"><span class="fill happy" style="width:${percent}%"></span></div>
-        <div class="quest-top">
-          <small>${progress.progress}/${q.target} completed</small>
-          <small>${progress.claimed ? "Reward claimed" : done ? "Completed!" : "In progress"}</small>
-        </div>
-        <button data-claim="${q.id}" ${!done || progress.claimed ? "disabled" : ""}>
-          ${progress.claimed ? "✓ Reward Claimed" : done ? "Claim Reward" : "Complete Mission"}
-        </button>
-      </article>`;
-  }).join("");
-
-  $("questCatalog").querySelectorAll("[data-claim]").forEach(btn => {
-    btn.addEventListener("click", () => claimQuest(btn.dataset.claim));
-  });
-}
-
-function claimQuest(id) {
-  const q = questTemplates.find(item => item.id === id);
-  const progress = state.quests[id];
-
-  if (!q || !progress || progress.claimed || progress.progress < q.target) return;
-
-  progress.claimed = true;
-  state.coins += q.reward;
-  gainXP(q.xp);
-  notify(`Misi selesai! Kamu mendapat ${q.reward} koin dan ${q.xp} XP. 🎉`);
-
-  renderAll();
-  saveGame();
-}
-
-function updateResetText() {
-  const next = new Date();
-  next.setHours(24, 0, 0, 0);
-  const ms = next - new Date();
-  const hours = Math.floor(ms / 3600000);
-  const minutes = Math.floor((ms % 3600000) / 60000);
-  $("resetTime").textContent =
-    `Misi diperbarui mengikuti tanggal lokal. Reset berikutnya sekitar ${hours} jam ${minutes} menit lagi.`;
-}
-
-function showPage(page) {
-  document.querySelectorAll(".page").forEach(el => {
-    el.classList.toggle("active", el.id === page);
+function switchPage(pageId) {
+  document.querySelectorAll(".page").forEach(page => {
+    page.classList.toggle("active", page.id === pageId);
   });
 
-  document.querySelectorAll(".nav-btn").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.page === page);
+  document.querySelectorAll("[data-page]").forEach(button => {
+    button.classList.toggle("active", button.dataset.page === pageId);
   });
 
-  if (page === "pets") renderPets();
-  if (page === "shop") renderWardrobe();
-  if (page === "room") renderRoomCatalog();
-  if (page === "quests") renderQuests();
+  if (pageId === "pets") renderPets();
+  if (pageId === "shop") renderShop();
+  if (pageId === "room") renderRooms();
 
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-document.querySelectorAll("[data-page]").forEach(btn => {
-  btn.addEventListener("click", event => {
-    event.preventDefault();
-    showPage(btn.dataset.page);
-  });
-});
+function tickNeeds() {
+  const now = Date.now();
+  const elapsed = Math.min((now - (state.lastTick || now)) / 1000, 3600);
+  state.lastTick = now;
 
-document.querySelectorAll("[data-shop]").forEach(btn => {
-  btn.addEventListener("click", () => {
-    activeShopCategory = btn.dataset.shop;
-    document.querySelectorAll("[data-shop]").forEach(tab => {
-      tab.classList.toggle("active", tab === btn);
+  if (!isSleeping()) {
+    state.hunger = clamp(state.hunger + elapsed * 0.12);
+    state.happy = clamp(state.happy - elapsed * 0.04);
+    state.clean = clamp(state.clean - elapsed * 0.025);
+    state.energy = clamp(state.energy - elapsed * 0.035);
+  }
+
+  resetDailyQuestsIfNeeded();
+  saveState();
+  updateStats();
+}
+
+function init() {
+  // Recover safely if the page was closed while the pet was sleeping.
+  const now = Date.now();
+  const elapsed = Math.max(0, now - (state.lastTick || now));
+
+  if (state.sleepUntil > now) {
+    const slept = Math.min(elapsed, 30000);
+    state.energy = clamp(state.energy + slept / 300);
+  }
+
+  state.lastTick = now;
+  resetDailyQuestsIfNeeded();
+
+  document.querySelectorAll("[data-page]").forEach(button => {
+    button.addEventListener("click", () => switchPage(button.dataset.page));
+  });
+
+  document.querySelectorAll("[data-shop]").forEach(button => {
+    button.addEventListener("click", () => {
+      shopCategory = button.dataset.shop;
+
+      document.querySelectorAll("[data-shop]").forEach(tab => {
+        tab.classList.toggle("active", tab === button);
+      });
+
+      renderShop();
     });
-    renderWardrobe();
-  });
-});
-
-$("feedBtn").addEventListener("click", () => performAction("feed"));
-$("playBtn").addEventListener("click", () => performAction("play"));
-$("cleanBtn").addEventListener("click", () => performAction("clean"));
-$("sleepBtn").addEventListener("click", startSleep);
-$("wakeBtn").addEventListener("click", () => endSleep(false));
-
-$("resetBtn").addEventListener("click", () => {
-  if (!confirm("Reset progres game di perangkat ini?")) return;
-
-  if (sleepInterval) clearInterval(sleepInterval);
-  sleeping = false;
-  sleepInterval = null;
-  state = defaultState();
-  $("sleepPanel").hidden = true;
-  $("sleepProgress").style.width = "0%";
-
-  renderAll();
-  saveGame();
-  notify("Progres lokal sudah direset.");
-});
-
-// =========================================
-// SUPABASE AUTH + CLOUD SAVE
-// =========================================
-
-async function openAccountDialog() {
-  $("authDialog").showModal();
-  $("authMessage").textContent = "";
-
-  if (currentUser) {
-    $("authTitle").textContent = "Your Account";
-    $("authSubmit").hidden = true;
-    $("toggleAuth").hidden = true;
-    $("logoutBtn").hidden = false;
-    $("authEmail").value = currentUser.email || "";
-    $("authEmail").disabled = true;
-    $("authPassword").hidden = true;
-  } else {
-    $("authTitle").textContent = authMode === "login" ? "Welcome back!" : "Create your account";
-    $("authSubmit").hidden = false;
-    $("authSubmit").textContent = authMode === "login" ? "Login" : "Create Account";
-    $("toggleAuth").hidden = false;
-    $("logoutBtn").hidden = true;
-    $("authEmail").disabled = false;
-    $("authPassword").hidden = false;
-    $("authEmail").value = "";
-    $("authPassword").value = "";
-    $("toggleAuth").textContent = authMode === "login"
-      ? "Belum punya akun? Daftar"
-      : "Sudah punya akun? Login";
-  }
-}
-
-$("accountBtn").addEventListener("click", openAccountDialog);
-$("closeAuth").addEventListener("click", () => $("authDialog").close());
-
-$("toggleAuth").addEventListener("click", () => {
-  authMode = authMode === "login" ? "signup" : "login";
-  openAccountDialog();
-});
-
-$("authForm").addEventListener("submit", async event => {
-  event.preventDefault();
-
-  if (!db) {
-    $("authMessage").textContent =
-      "Supabase belum dikonfigurasi. Isi URL dan publishable/anon key di app.js.";
-    return;
-  }
-
-  const email = $("authEmail").value.trim();
-  const password = $("authPassword").value;
-  $("authSubmit").disabled = true;
-  $("authMessage").textContent = "Memproses akun...";
-
-  try {
-    let result;
-
-    if (authMode === "signup") {
-      result = await db.auth.signUp({ email, password });
-    } else {
-      result = await db.auth.signInWithPassword({ email, password });
-    }
-
-    if (result.error) throw result.error;
-
-    if (result.data.user && !result.data.session && authMode === "signup") {
-      $("authMessage").textContent =
-        "Akun dibuat. Cek email untuk konfirmasi, lalu login.";
-      return;
-    }
-
-    currentUser = result.data.user;
-    if (currentUser) await loadCloudSave();
-
-    $("authDialog").close();
-    $("accountBtn").textContent = "Account";
-    $("cloudStatus").textContent = "☁ Connected";
-    renderAll();
-    notify("Berhasil login! Progresmu siap disimpan ke cloud. ☁️");
-    saveGame();
-  } catch (error) {
-    $("authMessage").textContent = error.message || "Login gagal.";
-  } finally {
-    $("authSubmit").disabled = false;
-  }
-});
-
-async function loadCloudSave() {
-  if (!db || !currentUser) return;
-
-  const { data, error } = await db
-    .from("pet_saves")
-    .select("save_data")
-    .eq("user_id", currentUser.id)
-    .maybeSingle();
-
-  if (error) {
-    console.error("Cloud load error:", error.message);
-    $("cloudStatus").textContent = "Local Save";
-    notify("Login berhasil, tetapi cloud save belum bisa dimuat. Periksa SQL dan RLS.");
-    return;
-  }
-
-  if (data?.save_data && typeof data.save_data === "object") {
-    state = { ...defaultState(), ...data.save_data };
-    refreshDailyQuests();
-    persistLocal();
-  } else {
-    // Akun baru: salin progres lokal ke cloud.
-    await db.from("pet_saves").upsert({
-      user_id: currentUser.id,
-      save_data: state,
-      updated_at: new Date().toISOString()
-    }, { onConflict: "user_id" });
-  }
-}
-
-$("logoutBtn").addEventListener("click", async () => {
-  if (!db) return;
-
-  await db.auth.signOut();
-  currentUser = null;
-  $("accountBtn").textContent = "Login";
-  $("cloudStatus").textContent = "Local Save";
-  $("authDialog").close();
-  notify("Kamu sudah logout. Progres lokal di perangkat ini tetap tersimpan.");
-});
-
-async function initializeAuth() {
-  if (!db) {
-    $("cloudStatus").textContent = "Local Save";
-    return;
-  }
-
-  $("cloudStatus").textContent = "Connecting...";
-
-  const { data } = await db.auth.getSession();
-  currentUser = data.session?.user || null;
-
-  if (currentUser) {
-    await loadCloudSave();
-    $("accountBtn").textContent = "Account";
-    $("cloudStatus").textContent = "☁ Connected";
-  } else {
-    $("accountBtn").textContent = "Login";
-    $("cloudStatus").textContent = "Local Save";
-  }
-
-  db.auth.onAuthStateChange((_event, session) => {
-    currentUser = session?.user || null;
-    $("accountBtn").textContent = currentUser ? "Account" : "Login";
-    $("cloudStatus").textContent = currentUser ? "☁ Connected" : "Local Save";
   });
 
-  renderAll();
+  $("feedBtn").addEventListener("click", () => care("feed"));
+  $("playBtn").addEventListener("click", () => care("play"));
+  $("cleanBtn").addEventListener("click", () => care("clean"));
+  $("sleepBtn").addEventListener("click", startSleep);
+  $("wakeBtn").addEventListener("click", () => wakePet(true));
+
+  $("renameBtn").addEventListener("click", () => {
+    $("nameInput").value = state.player;
+    $("nameDialog").showModal();
+  });
+
+  $("cancelName").addEventListener("click", () => $("nameDialog").close());
+
+  $("nameForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const name = $("nameInput").value.trim();
+    if (!name) return;
+
+    state.player = name.slice(0, 16);
+    saveState();
+    updateStats();
+    $("nameDialog").close();
+    showNotice(`Welcome, ${state.player}! ♡`);
+  });
+
+  $("resetBtn").addEventListener("click", () => $("confirmDialog").showModal());
+  $("cancelReset").addEventListener("click", () => $("confirmDialog").close());
+
+  $("resetForm").addEventListener("submit", event => {
+    event.preventDefault();
+
+    if (sleepTimer) clearInterval(sleepTimer);
+
+    localStorage.removeItem(SAVE_KEY);
+    state = freshState();
+
+    $("confirmDialog").close();
+    switchPage("home");
+    updateStats();
+    renderPets();
+    renderShop();
+    renderRooms();
+    showNotice("A fresh new adventure begins!");
+  });
+
+  updateStats();
+  renderPets();
+  renderShop();
+  renderRooms();
+
+  if (isSleeping()) {
+    sleepTimer = setInterval(updateSleep, 250);
+    updateSleep();
+  }
+
+  // Needs change slowly while the game is open.
+  setInterval(tickNeeds, 10000);
 }
 
-window.addEventListener("beforeunload", persistLocal);
-
-renderAll();
-initializeAuth();
+init();
