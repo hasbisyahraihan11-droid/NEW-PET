@@ -1,7 +1,7 @@
 
 /* MIMI PIXEL PET — GAME ENGINE */
 
-const SUPABASE_URL = "https://clzaohchgcigvjmasgke.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://clzaohchgcigvjmasgke.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_uWzC4hMSZcnQjCMQi3OH7w_Xr97SdnF";
 
 const client = window.supabase.createClient(
