@@ -1,4 +1,4 @@
-
+alert("JAVASCRIPT MIMI BERJALAN!");
 /* MIMI PIXEL PET — GAME ENGINE */
 
 const SUPABASE_URL = "https://clzaohchgcigvjmasgke.supabase.co";
