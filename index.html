@@ -4,210 +4,180 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#fff3f7">
-  <title>Mimi — My Virtual Cat</title>
+  <meta name="theme-color" content="#101827">
+  <title>Mimi — Virtual Pet</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
-  <main class="app">
-    <header class="header">
-      <div class="brand">
-        <div class="brand-icon">🐾</div>
-        <div>
-          <h1>mimi<span>.</span></h1>
-          <p>MY LITTLE VIRTUAL CAT</p>
-        </div>
-      </div>
-      <div class="online"><i></i> ONLINE</div>
+  <div class="ambient ambient-one"></div>
+  <div class="ambient ambient-two"></div>
+
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="#">
+        <span class="brand-icon">✦</span>
+        <span>MIMI<span class="brand-light">.SPACE</span></span>
+      </a>
+      <span class="online"><span></span> PET WORLD</span>
     </header>
 
-    <section class="hero">
-      <div class="decor d1">✦</div>
-      <div class="decor d2">♡</div>
-      <div class="decor d3">✧</div>
+    <section id="loginScreen" class="login-card">
+      <div class="mini-robot">🤖</div>
+      <p class="eyebrow">YOUR DIGITAL COMPANION</p>
+      <h1>Meet your <span>Mimi.</span></h1>
+      <p class="muted">Satu robot kecil, banyak cerita.</p>
 
-      <div class="speech" id="speech">
-        Meoww~ hai, manusia favoritku! 💗
-      </div>
+      <form id="loginForm">
+        <label for="email">Email akun</label>
+        <input id="email" type="email" placeholder="nama@email.com" required>
 
-      <button class="cat-button" id="catButton"
-        aria-label="Elus kucing Mimi">
-        <svg id="catSvg" viewBox="0 0 240 235"
-          xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#fffdfb"/>
-              <stop offset="100%" stop-color="#f5dce7"/>
-            </linearGradient>
-          </defs>
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="Masukkan password" required>
 
-          <!-- Telinga -->
-          <path d="M48 84 L39 17 Q38 5 50 13 L96 54 Z"
-            fill="#f4d5e1" stroke="#6d5363" stroke-width="3.5"
-            stroke-linejoin="round"/>
-          <path d="M49 61 L47 29 L72 53 Z" fill="#efa6c0"/>
-
-          <path d="M144 54 L190 13 Q202 5 201 17 L192 84 Z"
-            fill="#f4d5e1" stroke="#6d5363" stroke-width="3.5"
-            stroke-linejoin="round"/>
-          <path d="M168 53 L193 29 L191 61 Z" fill="#efa6c0"/>
-
-          <!-- Badan -->
-          <ellipse cx="120" cy="184" rx="69" ry="48"
-            fill="url(#fur)" stroke="#6d5363" stroke-width="3.5"/>
-
-          <!-- Ekor -->
-          <path d="M178 188 Q221 191 210 153 Q204 136 191 148"
-            fill="none" stroke="#6d5363" stroke-width="17"
-            stroke-linecap="round"/>
-          <path d="M178 188 Q221 191 210 153 Q204 136 191 148"
-            fill="none" stroke="#f4d5e1" stroke-width="10"
-            stroke-linecap="round"/>
-
-          <!-- Kepala -->
-          <path d="M42 102 Q42 48 120 48 Q198 48 198 102
-            Q198 169 120 174 Q42 169 42 102 Z"
-            fill="url(#fur)" stroke="#6d5363" stroke-width="3.5"/>
-
-          <!-- Corak kepala -->
-          <path d="M105 52 L115 70 L125 52 L135 72 L145 57"
-            fill="#eeb1c8" stroke="#6d5363" stroke-width="2.5"
-            stroke-linecap="round" stroke-linejoin="round"/>
-
-          <!-- Pipi -->
-          <ellipse cx="72" cy="126" rx="17" ry="9"
-            fill="#f4a8c2" opacity=".8"/>
-          <ellipse cx="168" cy="126" rx="17" ry="9"
-            fill="#f4a8c2" opacity=".8"/>
-
-          <!-- Mata -->
-          <g id="eyes">
-            <ellipse class="eye" cx="85" cy="105" rx="8" ry="12"
-              fill="#584458"/>
-            <ellipse cx="88" cy="101" rx="2.5" ry="3.5" fill="white"/>
-            <ellipse class="eye" cx="155" cy="105" rx="8" ry="12"
-              fill="#584458"/>
-            <ellipse cx="158" cy="101" rx="2.5" ry="3.5" fill="white"/>
-          </g>
-
-          <!-- Hidung dan mulut -->
-          <path d="M114 121 Q120 115 126 121 Q120 128 114 121"
-            fill="#e887a9"/>
-          <path d="M120 127 L120 132 Q110 143 103 132
-            M120 132 Q130 143 137 132"
-            fill="none" stroke="#6d5363" stroke-width="2.8"
-            stroke-linecap="round"/>
-
-          <!-- Kumis -->
-          <g stroke="#a58b9b" stroke-width="1.8"
-            stroke-linecap="round">
-            <path d="M94 126 L63 120 M94 134 L64 139"/>
-            <path d="M146 126 L177 120 M146 134 L176 139"/>
-          </g>
-
-          <!-- Kaki depan -->
-          <ellipse cx="91" cy="209" rx="22" ry="13"
-            fill="#fff8fb" stroke="#6d5363" stroke-width="3"/>
-          <ellipse cx="149" cy="209" rx="22" ry="13"
-            fill="#fff8fb" stroke="#6d5363" stroke-width="3"/>
-        </svg>
-      </button>
-
-      <div class="pet-name">Mimi <span>♡</span></div>
-      <div class="pet-status" id="petStatus">Senang bermain denganmu!</div>
-
-      <div class="level-pill">
-        <span>✨</span> LEVEL <b id="level">1</b>
-      </div>
-
-      <div class="exp-area">
-        <div class="exp-label">
-          <span>Pengalaman Mimi</span>
-          <b id="expText">0 / 100 EXP</b>
-        </div>
-        <div class="exp-track">
-          <div id="expBar"></div>
-        </div>
-      </div>
+        <button class="primary-btn" type="submit">Masuk ke dunia Mimi ↗</button>
+        <p id="loginMessage" class="message" aria-live="polite"></p>
+      </form>
+      <p class="tiny-note">Akun dibuat oleh admin. Pendaftaran publik tidak tersedia.</p>
     </section>
 
-    <section class="stats">
-      <div class="section-title">
-        <h2>Kebutuhan Mimi</h2>
-        <span>💗</span>
-      </div>
-
-      <div class="stat">
-        <div class="stat-top">
-          <span>🍓</span><span>Kenyang</span>
-          <b id="hungerText">80%</b>
-        </div>
-        <div class="track"><div id="hungerBar" class="fill pink"></div></div>
-      </div>
-
-      <div class="stat">
-        <div class="stat-top">
-          <span>💕</span><span>Bahagia</span>
-          <b id="happyText">85%</b>
-        </div>
-        <div class="track"><div id="happyBar" class="fill purple"></div></div>
-      </div>
-
-      <div class="stat">
-        <div class="stat-top">
-          <span>🌙</span><span>Energi</span>
-          <b id="energyText">90%</b>
-        </div>
-        <div class="track"><div id="energyBar" class="fill blue"></div></div>
-      </div>
-    </section>
-
-    <section class="play-section">
-      <div class="section-title">
+    <section id="petScreen" class="dashboard hidden">
+      <div class="welcome-row">
         <div>
-          <h2>Waktunya bermain!</h2>
-          <p>Kasih Mimi sedikit perhatian hari ini.</p>
+          <p class="eyebrow">YOUR PERSONAL UNIVERSE</p>
+          <h1>Hey, <span id="playerName">Player</span>!</h1>
+          <p class="muted">Mimi senang kamu kembali ✨</p>
         </div>
-        <span>🎀</span>
+        <button id="logoutBtn" class="logout-btn" type="button">Keluar ↗</button>
       </div>
 
-      <div class="actions">
-        <button class="action" id="feedBtn">
-          <span class="action-icon food">🍓</span>
-          <b>Kasih makan</b>
-          <small>Isi perut Mimi</small>
+      <div class="pet-card">
+        <div class="pet-card-top">
+          <span class="tag">✦ YOUR COMPANION</span>
+          <span id="moodLabel" class="mood">Feeling cute</span>
+        </div>
+
+        <div id="robotStage" class="robot-stage">
+          <div class="spark spark-a">✦</div>
+          <div class="spark spark-b">✧</div>
+          <div class="robot" id="robot">
+            <div class="antenna"><span></span></div>
+            <div class="ear ear-left"></div>
+            <div class="ear ear-right"></div>
+            <div class="robot-head">
+              <div class="robot-screen">
+                <div class="eyes">
+                  <span class="eye"></span>
+                  <span class="eye"></span>
+                </div>
+                <div class="mouth"></div>
+                <div class="cheek cheek-left"></div>
+                <div class="cheek cheek-right"></div>
+              </div>
+            </div>
+            <div class="robot-body">
+              <span class="heart">♥</span>
+              <span class="body-light"></span>
+            </div>
+            <div class="robot-foot foot-left"></div>
+            <div class="robot-foot foot-right"></div>
+          </div>
+          <div class="platform"></div>
+        </div>
+
+        <div class="pet-identity">
+          <div>
+            <h2 id="petNameDisplay">Mimi</h2>
+            <p id="petMoodText" class="muted">Si kecil siap menemanimu.</p>
+          </div>
+          <span id="levelBadge" class="level-badge">LVL 1</span>
+        </div>
+
+        <div class="exp-line">
+          <div class="exp-caption">
+            <span>LEVEL PROGRESS</span>
+            <span id="expText">0 / 100 EXP</span>
+          </div>
+          <div class="progress"><span id="expBar"></span></div>
+        </div>
+      </div>
+
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">MIMI'S CONDITION</p>
+          <h2>Status robot</h2>
+        </div>
+        <span class="tiny-note">LIVE STATS</span>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card">
+          <div class="stat-icon hunger-icon">🍪</div>
+          <div class="stat-name">Kenyang</div>
+          <div class="stat-value" id="hungerValue">80%</div>
+          <div class="stat-track"><span id="hungerBar"></span></div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-icon happy-icon">♡</div>
+          <div class="stat-name">Bahagia</div>
+          <div class="stat-value" id="happinessValue">80%</div>
+          <div class="stat-track"><span id="happinessBar"></span></div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-icon energy-icon">⚡</div>
+          <div class="stat-name">Energi</div>
+          <div class="stat-value" id="energyValue">100%</div>
+          <div class="stat-track"><span id="energyBar"></span></div>
+        </article>
+      </div>
+
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">SPEND SOME TIME</p>
+          <h2>Waktunya beraktivitas</h2>
+        </div>
+      </div>
+
+      <div class="actions-grid">
+        <button class="action-btn" data-action="feed" type="button">
+          <span class="action-emoji">🍓</span>
+          <strong>Beri makan</strong>
+          <small>Isi rasa lapar</small>
         </button>
-        <button class="action" id="petBtn">
-          <span class="action-icon love">🩷</span>
-          <b>Elus Mimi</b>
+        <button class="action-btn" data-action="play" type="button">
+          <span class="action-emoji">🎮</span>
+          <strong>Ajak bermain</strong>
           <small>Tambah bahagia</small>
         </button>
-        <button class="action" id="playBtn">
-          <span class="action-icon ball">🧶</span>
-          <b>Main bareng</b>
-          <small>Tambah EXP</small>
-        </button>
-        <button class="action" id="sleepBtn">
-          <span class="action-icon moon">🌙</span>
-          <b id="sleepLabel">Tidurkan</b>
-          <small>Isi energi</small>
+        <button class="action-btn" data-action="sleep" type="button">
+          <span class="action-emoji">🌙</span>
+          <strong>Waktunya tidur</strong>
+          <small>Pulihkan energi</small>
         </button>
       </div>
-    </section>
 
-    <section class="bottom-note">
-      <span>🐾</span>
-      <div>
-        <b>Little reminder</b>
-        <p>Mimi senang kalau kamu datang berkunjung.</p>
+      <div class="custom-card">
+        <div>
+          <p class="eyebrow">MAKE IT YOURS</p>
+          <h2>Personalisasi Mimi</h2>
+        </div>
+        <label for="petNameInput">Nama robot</label>
+        <input id="petNameInput" maxlength="24" placeholder="Nama robotmu">
+        <div class="color-row">
+          <label for="bodyColor">Warna badan</label>
+          <input id="bodyColor" type="color" value="#f4f7ff">
+          <label for="eyeColor">Warna mata</label>
+          <input id="eyeColor" type="color" value="#35eaff">
+        </div>
+        <button id="saveCustomBtn" class="secondary-btn" type="button">Simpan perubahan ✦</button>
+        <p id="saveMessage" class="message" aria-live="polite"></p>
       </div>
-      <button id="resetBtn" title="Mulai ulang progres"
-        aria-label="Mulai ulang progres">↻</button>
-    </section>
 
-    <footer>MADE WITH ♡ FOR YOU & MIMI</footer>
+      <footer>MADE WITH ♡ FOR YOUR LITTLE UNIVERSE</footer>
+    </section>
   </main>
 
-  <script src="app.js"></script>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
