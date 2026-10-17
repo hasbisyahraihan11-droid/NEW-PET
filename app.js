@@ -313,8 +313,7 @@ $("loginForm").addEventListener("submit", async (event) => {
     // Simpan waktu dan kebutuhan yang sudah diperbarui.
     await savePet();
     speak("Akhirnya kamu pulang! ♡");
-  
-catch (error) {
+  }catch (error) {
   console.error("Mimi login/profile error:", error);
 
   setMessage(
