@@ -313,17 +313,24 @@ $("loginForm").addEventListener("submit", async (event) => {
     // Simpan waktu dan kebutuhan yang sudah diperbarui.
     await savePet();
     speak("Akhirnya kamu pulang! ♡");
-  } catch (error) {
-    console.error("Mimi login/profile error:", error);
-    setMessage(
-      "loginMessage",
-      "Login atau profil gagal. Buka console/log untuk detail error.",
-      true
-    );
-  } finally {
-    button.disabled = false;
-    button.textContent = "START GAME ▶";
-  }
+  
+catch (error) {
+  console.error("Mimi login/profile error:", error);
+
+  setMessage(
+    "loginMessage",
+    "Error: " + (
+      error?.message ||
+      error?.details ||
+      JSON.stringify(error) ||
+      "Kesalahan tidak diketahui"
+    ),
+    true
+  );
+} finally {
+  button.disabled = false;
+  button.textContent = "START GAME ▶";
+}
 });
 
 /* Aktivitas Tamagotchi */
