@@ -3,113 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#f8c9df">
-  <title>Mimi Virtual Pet ♡</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#211d38">
+  <title>Mimi's Pixel World</title>
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="app.js"></script>
 </head>
 <body>
-  <div class="bg-orb orb-one"></div><div class="bg-orb orb-two"></div>
-  <header class="topbar">
-    <a class="brand" href="#" aria-label="Mimi home"><span class="brand-icon">♡</span><span>MIMI<span class="brand-light"> PET</span><small>your tiny bestie</small></span></a>
-    <div class="top-actions">
-      <div class="wallet"><span>🪙</span><b id="coinCount">120</b></div>
-      <div class="level-pill">LV <b id="levelCount">1</b></div>
-      <button class="icon-button" id="soundButton" title="Suara" aria-label="Suara">♫</button>
-    </div>
-  </header>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">M</div>
+        <div>
+          <h1>MIMI WORLD</h1>
+          <p>YOUR LITTLE PIXEL FRIEND</p>
+        </div>
+      </div>
+      <div class="level-badge">LV. <span id="level">1</span></div>
+    </header>
 
-  <main class="app-shell">
-    <section class="welcome-row">
-      <div><p class="eyebrow">YOUR LITTLE WORLD ✦</p><h1>Hai, <span id="playerNameDisplay">Bestie</span>!</h1><p class="subline">Temenin pet kamu tumbuh hari ini.</p></div>
-      <button class="soft-button" id="profileButton">✎ Nama</button>
-    </section>
+    <section class="pet-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">YOUR COMPANION</p>
+          <h2>Hello, Mimi!</h2>
+        </div>
+        <span class="online"><i></i> ONLINE</span>
+      </div>
 
-    <section class="main-grid">
-      <div class="pet-card panel">
-        <div class="pet-card-top"><span class="live-dot"></span><span id="petMoodLabel">Lagi happy</span><button id="randomizeButton" class="tiny-icon" title="Acak gaya">✧</button></div>
-        <div class="scene" id="petScene">
-          <div class="scene-sparkle sparkle-a">✦</div><div class="scene-sparkle sparkle-b">✧</div><div class="scene-cloud cloud-a"></div><div class="scene-cloud cloud-b"></div>
-          <div id="petAvatar" class="pet-avatar">
-            <div class="pet-hat" id="petHat"></div>
-            <div class="pet-ears" id="petEars"></div>
-            <div class="pet-body" id="petBody"><div class="pet-face"><span class="eye eye-left"></span><span class="eye eye-right"></span><span class="blush blush-left"></span><span class="blush blush-right"></span><span class="mouth">⌣</span></div></div>
-            <div class="pet-outfit" id="petOutfit"></div>
-            <div class="pet-accessory" id="petAccessory"></div>
+      <div class="scene" id="scene">
+        <div class="sun"></div>
+        <div class="cloud cloud-one">☁</div>
+        <div class="cloud cloud-two">☁</div>
+        <div class="star star-one">✦</div>
+        <div class="star star-two">✧</div>
+
+        <div class="pet-wrap" id="petWrap">
+          <div class="zzz" id="zzz" hidden>Z z z</div>
+          <div class="pet" id="pet" aria-label="Mimi si kucing virtual">
+            <div class="pet-ears">
+              <span></span><span></span>
+            </div>
+            <div class="pet-face">
+              <div class="eyes"><i></i><i></i></div>
+              <div class="blush"><i></i><i></i></div>
+              <div class="nose"></div>
+              <div class="mouth">ᴗ</div>
+            </div>
+            <div class="pet-body"></div>
+            <div class="pet-feet"><i></i><i></i></div>
           </div>
-          <div class="pet-shadow"></div>
-          <div class="name-tag"><b id="petNameDisplay">Mimi</b><span id="petSpeciesDisplay">Kucing · Lv. 1</span></div>
+          <div class="shadow"></div>
         </div>
-        <div class="pet-stats">
-          <div class="stat-row"><span>🍓 Lapar</span><div class="meter"><i id="hungerMeter"></i></div><b id="hungerValue">82%</b></div>
-          <div class="stat-row"><span>⚡ Energi</span><div class="meter"><i id="energyMeter"></i></div><b id="energyValue">90%</b></div>
-          <div class="stat-row"><span>💗 Happy</span><div class="meter"><i id="happyMeter"></i></div><b id="happyValue">95%</b></div>
-          <div class="stat-row"><span>🫧 Bersih</span><div class="meter"><i id="cleanMeter"></i></div><b id="cleanValue">88%</b></div>
-        </div>
-        <div class="pet-actions">
-          <button class="action-button pink" data-action="feed"><span>🍓</span><b>Kasih makan</b><small>−10 koin</small></button>
-          <button class="action-button lilac" data-action="play"><span>🧶</span><b>Main bareng</b><small>+ happy</small></button>
-          <button class="action-button mint" data-action="clean"><span>🫧</span><b>Mandiin</b><small>+ bersih</small></button>
-          <button class="action-button peach" data-action="sleep"><span>💤</span><b>Istirahat</b><small>+ energi</small></button>
-        </div>
+
+        <div class="ground"></div>
+        <div class="scene-caption" id="sceneCaption">Mimi is happy to see you!</div>
       </div>
 
-      <div class="right-column">
-        <section class="panel progress-panel">
-          <div class="section-heading"><div><p class="eyebrow">LITTLE STEPS</p><h2>Pet progress</h2></div><span class="level-badge">⭐ LV <b id="levelLabel">1</b></span></div>
-          <div class="xp-label"><span>EXP</span><b><span id="xpCount">0</span> / <span id="xpGoal">100</span></b></div><div class="xp-meter"><i id="xpMeter"></i></div>
-          <p class="muted small">Naik level buat membuka item dan spesies baru ✨</p>
-          <div class="daily-quest"><div class="quest-icon">🎯</div><div><b>Misi hari ini</b><p id="questText">Mainkan mini-game sekali</p></div><span id="questStatus" class="quest-status">0/1</span></div>
-        </section>
-
-        <section class="panel quick-panel">
-          <div class="section-heading"><div><p class="eyebrow">PICK YOUR VIBE</p><h2>Pet species</h2></div><button class="text-button" data-tab="species">Lihat semua ↗</button></div>
-          <div class="species-strip" id="speciesStrip"></div>
-        </section>
-
-        <section class="panel mini-panel">
-          <div class="section-heading"><div><p class="eyebrow">PLAY & EARN</p><h2>Mini games</h2></div><span class="game-sticker">🎮</span></div>
-          <button class="game-card" id="tapGameButton"><span class="game-icon">💫</span><span class="game-copy"><b>Star Tap</b><small>Tap bintang sebanyak mungkin!</small></span><span class="game-reward">+ koin <b>🪙</b></span><span class="game-arrow">›</span></button>
-          <button class="game-card" id="memoryGameButton"><span class="game-icon">🧠</span><span class="game-copy"><b>Memory Match</b><small>Temukan pasangan yang sama.</small></span><span class="game-reward">+ EXP <b>⭐</b></span><span class="game-arrow">›</span></button>
-        </section>
+      <div class="pet-name-row">
+        <div>
+          <h3>Mimi <span class="heart">♥</span></h3>
+          <p id="moodText">Mood: Happy</p>
+        </div>
+        <div class="coin-display">✦ <span id="coins">20</span></div>
       </div>
-    </section>
 
-    <section class="panel studio-panel" id="studio">
-      <div class="section-heading studio-heading"><div><p class="eyebrow">MAKE IT YOURS ✂</p><h2>Custom Studio</h2><p class="muted small">Mix & match sampai pet kamu paling gemes.</p></div><button id="saveStyleButton" class="primary-button">Simpan gaya ♡</button></div>
-      <div class="studio-layout">
-        <div class="studio-preview"><div class="preview-circle"><span id="studioEmoji">🐱</span><span class="preview-hearts">♡ ✦</span></div><b id="studioPetTitle">Mimi si Kucing</b><span class="muted small">Your style, your story.</span></div>
-        <div class="studio-controls">
-          <div class="control-group"><label>Spesies</label><div id="speciesOptions" class="choice-grid"></div></div>
-          <div class="control-group"><label>Warna tubuh</label><div id="colorOptions" class="color-options"></div></div>
-          <div class="control-group"><label>Bentuk tubuh</label><div id="shapeOptions" class="choice-grid compact"></div></div>
-          <div class="control-group"><label>Pakaian</label><div id="outfitOptions" class="item-grid"></div></div>
-          <div class="control-group"><label>Topi</label><div id="hatOptions" class="item-grid"></div></div>
-          <div class="control-group"><label>Aksesori</label><div id="accessoryOptions" class="item-grid"></div></div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-top"><span>⚡ Energy</span><b id="energyValue">70%</b></div>
+          <div class="bar"><div id="energyBar" class="bar-fill energy"></div></div>
+        </div>
+        <div class="stat">
+          <div class="stat-top"><span>🍓 Hunger</span><b id="hungerValue">70%</b></div>
+          <div class="bar"><div id="hungerBar" class="bar-fill hunger"></div></div>
+        </div>
+        <div class="stat">
+          <div class="stat-top"><span>💗 Happiness</span><b id="happyValue">80%</b></div>
+          <div class="bar"><div id="happyBar" class="bar-fill happy"></div></div>
         </div>
       </div>
     </section>
 
-    <section class="panel shop-panel" id="shop">
-      <div class="section-heading"><div><p class="eyebrow">TINY TREASURES</p><h2>Pet shop</h2><p class="muted small">Item gratis, item koin, dan hadiah level.</p></div><div class="shop-filter" id="shopFilters"><button class="filter active" data-filter="all">Semua</button><button class="filter" data-filter="outfit">Outfit</button><button class="filter" data-filter="hat">Topi</button><button class="filter" data-filter="accessory">Aksesori</button></div></div>
-      <div class="shop-grid" id="shopGrid"></div>
+    <section class="actions-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">TAKE CARE OF MIMI</p>
+          <h2>Daily Activities</h2>
+        </div>
+      </div>
+
+      <div class="action-grid">
+        <button class="action-btn feed" id="feedBtn">
+          <span class="action-icon">🍓</span>
+          <strong>Feed</strong>
+          <small>Give a snack</small>
+        </button>
+        <button class="action-btn play" id="playBtn">
+          <span class="action-icon">🎾</span>
+          <strong>Play</strong>
+          <small>Have some fun</small>
+        </button>
+        <button class="action-btn sleep" id="sleepBtn">
+          <span class="action-icon">🌙</span>
+          <strong>Sleep</strong>
+          <small>Rest for 30 sec</small>
+        </button>
+        <button class="action-btn clean" id="cleanBtn">
+          <span class="action-icon">🫧</span>
+          <strong>Clean</strong>
+          <small>Freshen up</small>
+        </button>
+      </div>
+
+      <div class="sleep-panel" id="sleepPanel" hidden>
+        <div class="sleep-info">
+          <span>🌙 Mimi is sleeping...</span>
+          <strong id="sleepCountdown">30s</strong>
+        </div>
+        <div class="bar sleep-track">
+          <div id="sleepProgress" class="bar-fill sleep-fill"></div>
+        </div>
+        <button class="wake-btn" id="wakeBtn">☀️ Wake Mimi up</button>
+      </div>
+
+      <p class="notice" id="notice" role="status" aria-live="polite">
+        Mimi is waiting for you ♡
+      </p>
     </section>
 
-    <section class="bottom-nav">
-      <button class="nav-item active" data-scroll="top"><span>⌂</span>Home</button>
-      <button class="nav-item" data-scroll="studio"><span>✧</span>Studio</button>
-      <button class="nav-item" data-scroll="shop"><span>♡</span>Shop</button>
-      <button class="nav-item" id="accountButton"><span>☻</span>Akun</button>
-    </section>
-    <footer>Made with ♡ for your tiny bestie <span>·</span> Mimi Virtual Pet</footer>
+    <footer>
+      <span>MADE WITH ♥ FOR MIMI</span>
+      <button id="resetBtn" class="reset-btn">Reset game</button>
+    </footer>
   </main>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <div class="modal-backdrop hidden" id="modalBackdrop">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="modalClose" aria-label="Tutup">×</button><div id="modalContent"></div></div>
-  </div>
+  <script src="app.js"></script>
 </body>
 </html>
+```
