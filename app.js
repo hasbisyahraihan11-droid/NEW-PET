@@ -330,6 +330,7 @@ catch (error) {
 } finally {
   button.disabled = false;
   button.textContent = "START GAME ▶";
+}
 });
 
 /* Aktivitas Tamagotchi */
