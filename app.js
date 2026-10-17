@@ -1,219 +1,768 @@
-/* Mimi Virtual Pet — frontend starter with local save + optional Supabase sync.
-   Never put a Supabase service_role key in browser code. */
+// =========================================
+// MIMI PIXEL WORLD - GAME ENGINE
+// =========================================
+
+// Masukkan URL project Supabase dan publishable/anon key milikmu.
+// Jangan pernah memasukkan service_role atau secret key ke frontend.
 const SUPABASE_URL = "https://clzaohchgcigvjmasgke.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_uWzC4hMSZcnQjCMQi3OH7w_Xr97SdnF";
-const hasSupabaseConfig = SUPABASE_URL.startsWith("https://") && !SUPABASE_PUBLISHABLE_KEY.includes("PASTE_");
-const client = (hasSupabaseConfig && window.supabase) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY) : null;
+const SUPABASE_KEY = "sb_publishable_uWzC4hMSZcnQjCMQi3OH7w_Xr97SdnF";
 
-const $ = (id) => document.getElementById(id);
-const SPECIES = [
-  {id:"cat",name:"Kucing",emoji:"🐱",unlock:1,color:"#f8c8d9"},
-  {id:"rabbit",name:"Kelinci",emoji:"🐰",unlock:1,color:"#f3d9e7"},
-  {id:"bear",name:"Beruang",emoji:"🐻",unlock:2,color:"#c99a77"},
-  {id:"slime",name:"Slime",emoji:"🫧",unlock:2,color:"#a6e9d4"},
-  {id:"dog",name:"Anjing",emoji:"🐶",unlock:3,color:"#e9c18c"},
-  {id:"fox",name:"Rubah",emoji:"🦊",unlock:4,color:"#f3a46f"},
-  {id:"panda",name:"Panda",emoji:"🐼",unlock:5,color:"#d9d8df"},
-  {id:"dragon",name:"Naga",emoji:"🐲",unlock:7,color:"#a9d9b5"},
-  {id:"penguin",name:"Penguin",emoji:"🐧",unlock:8,color:"#b8d8ef"}
-];
-const COLORS = [
-  {name:"Pink",value:"#f8c8d9"},{name:"Lilac",value:"#cfc0f5"},{name:"Mint",value:"#a6e9d4"},
-  {name:"Peach",value:"#f5c49c"},{name:"Sky",value:"#a9d8ef"},{name:"Cream",value:"#f5e8bd"},
-  {name:"Berry",value:"#d99bc7"},{name:"Cloud",value:"#f4f1f5"}
-];
-const ITEMS = [
-  {id:"none",type:"outfit",name:"Tanpa outfit",emoji:"—",price:0,level:1},
-  {id:"tee",type:"outfit",name:"Kaos pastel",emoji:"👕",price:0,level:1},
-  {id:"hoodie",type:"outfit",name:"Hoodie",emoji:"🧥",price:45,level:1},
-  {id:"dress",type:"outfit",name:"Dress manis",emoji:"👗",price:70,level:2},
-  {id:"wizard",type:"outfit",name:"Jubah mage",emoji:"🥋",price:110,level:4},
-  {id:"crown",type:"hat",name:"Mahkota",emoji:"👑",price:0,level:1},
-  {id:"beanie",type:"hat",name:"Beanie",emoji:"🧢",price:35,level:1},
-  {id:"flowerhat",type:"hat",name:"Bunga",emoji:"🌸",price:45,level:2},
-  {id:"witch",type:"hat",name:"Topi penyihir",emoji:"🧙",price:95,level:4},
-  {id:"halo",type:"hat",name:"Halo",emoji:"😇",price:0,level:5},
-  {id:"bow",type:"accessory",name:"Pita",emoji:"🎀",price:0,level:1},
-  {id:"star",type:"accessory",name:"Bintang",emoji:"⭐",price:30,level:1},
-  {id:"heart",type:"accessory",name:"Hati",emoji:"💖",price:40,level:2},
-  {id:"wings",type:"accessory",name:"Sayap",emoji:"🪽",price:100,level:5},
-  {id:"rainbow",type:"accessory",name:"Pelangi",emoji:"🌈",price:120,level:6}
-];
-const defaultState = () => ({
-  playerName:"Bestie",petName:"Mimi",species:"cat",bodyColor:"#f8c8d9",shape:"round",
-  outfit:"tee",hat:"",accessory:"bow",coins:120,level:1,xp:0,hunger:82,energy:90,happy:95,clean:88,
-  owned:["none","tee","crown","bow"],ownedSpecies:["cat","rabbit"],questDone:false,createdAt:Date.now(),lastSeen:Date.now()
-});
-let state = defaultState();
-let user = null;
-let toastTimer = null;
-let soundOn = true;
-let currentFilter = "all";
-let starGameInterval = null;
-let starGameRemaining = 10;
-let starGameScore = 0;
-let memoryState = null;
+const supabaseReady =
+  SUPABASE_URL.startsWith("https://") &&
+  SUPABASE_KEY !== "MASUKKAN_SUPABASE_PUBLISHABLE_ATAU_ANON_KEY" &&
+  Boolean(window.supabase);
 
-function cloneDefault(){ return JSON.parse(JSON.stringify(defaultState())); }
-function loadLocal(){
-  try { const saved = JSON.parse(localStorage.getItem("mimiPetSave") || "null"); if(saved) state = {...cloneDefault(),...saved}; }
-  catch(e){ console.warn("Local save could not be read", e); }
-}
-function saveLocal(){ state.lastSeen = Date.now(); try { localStorage.setItem("mimiPetSave", JSON.stringify(state)); } catch(e){} }
-function toast(message){ const el=$("toast"); el.textContent=message; el.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove("show"),2300); }
-function say(message){ if(soundOn && "speechSynthesis" in window){ try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(message);u.lang="id-ID";u.rate=1.05;speechSynthesis.speak(u);}catch(e){} } }
-function getSpecies(id=state.species){ return SPECIES.find(s=>s.id===id)||SPECIES[0]; }
-function getItem(id){ return ITEMS.find(i=>i.id===id); }
-function gainXP(amount){ state.xp += amount; while(state.xp >= state.level*100){state.xp -= state.level*100;state.level++;state.coins+=25;SPECIES.filter(s=>s.unlock<=state.level).forEach(s=>{if(!state.ownedSpecies.includes(s.id))state.ownedSpecies.push(s.id)});toast(`Level up! Sekarang level ${state.level} ✨ +25 koin`);} saveLocal();render(); }
-function setMeter(id,value){ $(id).style.width=Math.max(0,Math.min(100,value))+"%"; $(id.replace("Meter","Value")).textContent=Math.round(value)+"%"; }
-function render(){
-  $("coinCount").textContent=state.coins; $("levelCount").textContent=state.level; $("levelLabel").textContent=state.level;
-  $("xpCount").textContent=state.xp; $("xpGoal").textContent=state.level*100; $("xpMeter").style.width=(state.xp/(state.level*100)*100)+"%";
-  $("playerNameDisplay").textContent=state.playerName; $("petNameDisplay").textContent=state.petName;
-  $("petSpeciesDisplay").textContent=`${getSpecies().name} · Lv. ${state.level}`;
-  $("petMoodLabel").textContent=state.happy>70?"Lagi happy ♡":state.happy>35?"Butuh perhatian":"Sedikit sedih";
-  setMeter("hungerMeter",state.hunger);setMeter("energyMeter",state.energy);setMeter("happyMeter",state.happy);setMeter("cleanMeter",state.clean);
-  const sp=getSpecies(); const body=$("petBody");
-  body.style.background=state.bodyColor; body.style.borderRadius=state.shape==="round"?"48% 48% 43% 43%":state.shape==="chubby"?"48% 48% 48% 48%":"42% 42% 38% 38%";
-  $("petEars").style.display=["slime","penguin"].includes(sp.id)?"none":"block";
-  if(sp.id==="rabbit"){$("petEars").style.transform="scaleY(1.4)";}else{$("petEars").style.transform="";}
-  if(sp.id==="bear"){$("petEars").style.setProperty("--ear-color",state.bodyColor);}
-  $("petHat").textContent=(getItem(state.hat)?.emoji)||"";
-  $("petOutfit").textContent="";
-  const outfit=getItem(state.outfit);
-  $("petOutfit").style.background=outfit?.id==="dress"?"#ee8eb8":outfit?.id==="hoodie"?"#b9a7ef":outfit?.id==="wizard"?"#8870b8":outfit?.id==="tee"?"#f6a8c9":"transparent";
-  $("petOutfit").style.border=outfit&&outfit.id!=="none"?"3px solid #fff8":"0";
-  $("petAccessory").textContent=getItem(state.accessory)?.emoji||"";
-  $("studioEmoji").textContent=sp.emoji; $("studioPetTitle").textContent=`${state.petName} si ${sp.name}`;
-  $("questStatus").textContent=state.questDone?"1/1":"0/1";
-  $("questText").textContent=state.questDone?"Misi selesai! Kamu keren ♡":"Mainkan mini-game sekali";
-  renderSpeciesStrip();renderStudioOptions();renderShop();
-}
-function renderSpeciesStrip(){
-  $("speciesStrip").innerHTML=SPECIES.slice(0,5).map(sp=>{
-    const owned=state.ownedSpecies.includes(sp.id)||state.level>=sp.unlock;
-    return `<button class="species-chip ${sp.id===state.species?"selected":""} ${owned?"":"locked"}" data-species="${sp.id}"><span class="species-emoji">${sp.emoji}</span><span>${sp.name}</span><small>${owned?"Pilih":`Lv. ${sp.unlock}`}</small></button>`;
-  }).join("");
-}
-function renderStudioOptions(){
-  $("speciesOptions").innerHTML=SPECIES.map(sp=>{const unlocked=state.ownedSpecies.includes(sp.id)||state.level>=sp.unlock;return `<button class="choice ${sp.id===state.species?"selected":""} ${unlocked?"":"locked"}" data-pick-species="${sp.id}">${sp.emoji} ${sp.name}${unlocked?"":` · Lv${sp.unlock}`}</button>`}).join("");
-  $("colorOptions").innerHTML=COLORS.map(c=>`<button class="color-dot ${c.value===state.bodyColor?"selected":""}" data-color="${c.value}" style="background:${c.value}" title="${c.name}" aria-label="${c.name}"></button>`).join("");
-  $("shapeOptions").innerHTML=[["round","Bulat"],["chubby","Chubby"],["tiny","Mini"]].map(([id,name])=>`<button class="choice ${state.shape===id?"selected":""}" data-shape="${id}">${name}</button>`).join("");
-  ["outfit","hat","accessory"].forEach(type=>{
-    const target=type==="outfit"?"outfitOptions":type==="hat"?"hatOptions":"accessoryOptions";
-    const current=state[type];
-    const entries=ITEMS.filter(i=>i.type===type && (state.owned.includes(i.id)||i.price===0));
-    if(type!=="outfit") entries.unshift({id:"",type,name:"Tanpa",emoji:"✕",price:0,level:1});
-    $(target).innerHTML=entries.map(item=>`<button class="item-choice ${current===item.id?"selected":""}" data-equip="${type}:${item.id}"><span>${item.emoji}</span><small>${item.name}</small></button>`).join("");
-  });
-}
-function renderShop(){
-  const list=ITEMS.filter(i=>i.id!=="none" && (currentFilter==="all"||i.type===currentFilter));
-  $("shopGrid").innerHTML=list.map(item=>{
-    const owned=state.owned.includes(item.id),levelLocked=state.level<item.level;
-    const label=owned?"Sudah punya":levelLocked?`🔒 Level ${item.level}`:item.price===0?"Gratis":`🪙 ${item.price}`;
-    return `<article class="shop-item"><div class="shop-art">${item.emoji}</div><b>${item.name}</b><small>${item.type==="outfit"?"Outfit":item.type==="hat"?"Topi":"Aksesori"}</small><button class="shop-buy ${owned?"owned":levelLocked?"locked":""}" data-buy="${item.id}" ${owned||levelLocked?"disabled":""}>${label}</button></article>`;
-  }).join("");
-}
-function chooseSpecies(id){
-  const sp=getSpecies(id);
-  if(!state.ownedSpecies.includes(id)&&state.level<sp.unlock){toast(`Spesies ini terbuka di level ${sp.unlock} 🔒`);return;}
-  state.species=id;state.bodyColor=sp.color;saveLocal();render();toast(`${sp.name} siap jadi bestie kamu!`);
-}
-function performAction(action){
-  if(action==="feed"){if(state.coins<10){toast("Koin belum cukup, main mini-game dulu ya!");return;}state.coins-=10;state.hunger=Math.min(100,state.hunger+22);state.happy=Math.min(100,state.happy+3);toast("Nyam nyam! Pet kamu kenyang 🍓");}
-  if(action==="play"){if(state.energy<12){toast("Energi pet kurang. Coba istirahat dulu!");return;}state.energy-=12;state.happy=Math.min(100,state.happy+16);gainXP(8);toast("Yeay, seru banget main bareng! 🧶");}
-  if(action==="clean"){state.clean=100;state.happy=Math.min(100,state.happy+5);toast("Sekarang wangi dan bersih 🫧");}
-  if(action==="sleep"){state.energy=Math.min(100,state.energy+30);state.hunger=Math.max(0,state.hunger-4);toast("Zzz... energi terisi 💕");}
-  saveLocal();render();
-}
-function buyItem(id){
-  const item=getItem(id);if(!item)return;
-  if(state.owned.includes(id)){toast("Item ini sudah kamu punya ♡");return;}
-  if(state.level<item.level){toast(`Butuh level ${item.level} untuk item ini 🔒`);return;}
-  if(state.coins<item.price){toast("Koin kamu belum cukup 🪙");return;}
-  state.coins-=item.price;state.owned.push(id);state[item.type]=id;saveLocal();render();toast(`${item.name} berhasil dibeli! ♡`);say("Item baru! Yeay!");
-}
-function randomStyle(){
-  const choices=ITEMS.filter(i=>state.owned.includes(i.id));
-  ["outfit","hat","accessory"].forEach(type=>{const c=choices.filter(i=>i.type===type);if(c.length)state[type]=c[Math.floor(Math.random()*c.length)].id;});
-  state.bodyColor=COLORS[Math.floor(Math.random()*COLORS.length)].value;saveLocal();render();toast("Gaya random buat kamu ✨");
-}
-function openModal(content){$("modalContent").innerHTML=content;$("modalBackdrop").classList.remove("hidden");}
-function closeModal(){$("modalBackdrop").classList.add("hidden");if(starGameInterval){clearInterval(starGameInterval);starGameInterval=null;}}
-function openNameModal(){openModal(`<h2>Siapa nama bestie-nya? ♡</h2><p>Atur nama kamu dan nama pet kesayangan.</p><label class="small">Nama kamu</label><input id="editPlayerName" maxlength="20" value="${escapeAttr(state.playerName)}"><label class="small">Nama pet</label><input id="editPetName" maxlength="20" value="${escapeAttr(state.petName)}"><button class="primary-button" id="saveNames">Simpan nama ♡</button>`);$("saveNames").onclick=()=>{state.playerName=$("editPlayerName").value.trim()||"Bestie";state.petName=$("editPetName").value.trim()||"Mimi";saveLocal();render();closeModal();toast("Nama berhasil disimpan!");};}
-function escapeAttr(s){return String(s).replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
-function openStarGame(){
-  starGameScore=0;starGameRemaining=10;
-  openModal(`<div class="section-heading"><div><p class="eyebrow">MINI GAME</p><h2>Star Tap 💫</h2></div><span class="timer-pill">⏱ <b id="starTimer">10</b>s</span></div><p>Tap bintang sebanyak mungkin sebelum waktunya habis. Setiap tap = 1 poin!</p><div class="game-stars" id="gameStars">${Array.from({length:10},(_,i)=>`<button class="game-star" data-star="${i}">${["⭐","✨","💫","🌟"][i%4]}</button>`).join("")}</div><p>Skor: <b id="starScore">0</b></p><button class="primary-button" id="startStarGame">Mulai game ▶</button>`);
-  $("gameStars").querySelectorAll("[data-star]").forEach(btn=>btn.disabled=true);
-  $("startStarGame").onclick=()=>{
-    $("startStarGame").disabled=true;$("startStarGame").textContent="Gas terus! ✨";
-    $("gameStars").querySelectorAll("[data-star]").forEach(btn=>btn.disabled=false);
-    starGameInterval=setInterval(()=>{starGameRemaining--;$("starTimer").textContent=starGameRemaining;if(starGameRemaining<=0){clearInterval(starGameInterval);starGameInterval=null;finishStarGame();}},1000);
+const db = supabaseReady
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+  : null;
+
+const $ = id => document.getElementById(id);
+const MAX = 100;
+const SAVE_KEY = "mimiWorldSaveV1";
+
+const species = [
+  { id: "cat", name: "Mimi the Cat", icon: "🐱", price: 0, description: "Manis, lembut, dan suka camilan.", color: "#fff1e7" },
+  { id: "dog", name: "Bobo the Dog", icon: "🐶", price: 80, description: "Sahabat ceria yang suka bermain.", color: "#dfb895" },
+  { id: "bunny", name: "Lulu the Bunny", icon: "🐰", price: 120, description: "Kelinci imut dengan telinga panjang.", color: "#f9e7f3" },
+  { id: "slime", name: "Mochi the Slime", icon: "🟢", price: 160, description: "Slime kecil yang selalu ceria.", color: "#b6f2d0" }
+];
+
+const wardrobe = [
+  { id: "bow", name: "Pink Bow", icon: "🎀", price: 20, category: "accessories", description: "Pita pink yang menggemaskan." },
+  { id: "crown", name: "Royal Crown", icon: "👑", price: 75, category: "hats", description: "Mahkota untuk pet kerajaan." },
+  { id: "flower", name: "Flower Clip", icon: "🌸", price: 30, category: "accessories", description: "Jepit bunga yang manis." },
+  { id: "wizard", name: "Wizard Hat", icon: "🧙", price: 65, category: "hats", description: "Topi penyihir pixel." },
+  { id: "halo", name: "Angel Halo", icon: "😇", price: 90, category: "hats", description: "Lingkaran cahaya di kepala." },
+  { id: "heart", name: "Heart Glasses", icon: "🕶️", price: 45, category: "accessories", description: "Kacamata keren berbentuk hati." },
+  { id: "star", name: "Star Hairpin", icon: "⭐", price: 25, category: "accessories", description: "Aksesori bintang kecil." },
+  { id: "party", name: "Party Hat", icon: "🥳", price: 40, category: "hats", description: "Topi pesta penuh warna." }
+];
+
+const decorations = [
+  { id: "bed", name: "Cozy Bed", icon: "🛏️", price: 40, description: "Tempat tidur empuk." },
+  { id: "plant", name: "Little Plant", icon: "🪴", price: 25, description: "Tanaman kecil untuk kamar." },
+  { id: "lamp", name: "Moon Lamp", icon: "🌙", price: 55, description: "Lampu malam yang cantik." },
+  { id: "rug", name: "Pink Rug", icon: "🩷", price: 35, description: "Karpet lembut warna pink." },
+  { id: "books", name: "Bookshelf", icon: "📚", price: 60, description: "Rak buku mini." },
+  { id: "teddy", name: "Teddy Bear", icon: "🧸", price: 45, description: "Boneka teman Mimi." }
+];
+
+const questTemplates = [
+  { id: "feed", name: "Snack Time", description: "Beri makan pet 2 kali.", target: 2, reward: 15, xp: 5 },
+  { id: "play", name: "Play Together", description: "Main bersama pet 2 kali.", target: 2, reward: 20, xp: 8 },
+  { id: "clean", name: "Fresh & Clean", description: "Bersihkan pet 1 kali.", target: 1, reward: 10, xp: 5 }
+];
+
+function defaultState() {
+  return {
+    name: "Mimi",
+    species: "cat",
+    energy: 70,
+    hunger: 70,
+    happiness: 80,
+    coins: 100,
+    level: 1,
+    xp: 0,
+    ownedSpecies: ["cat"],
+    ownedWardrobe: [],
+    equipped: null,
+    ownedDecorations: [],
+    roomDecorations: [],
+    quests: {},
+    questDate: localDateKey()
   };
-  $("gameStars").querySelectorAll("[data-star]").forEach(btn=>btn.onclick=()=>{if(starGameRemaining<=0)return;starGameScore++;$("starScore").textContent=starGameScore;btn.textContent=["🌟","💖","✨","🪙"][Math.floor(Math.random()*4)];btn.style.background="#fff0cb";});
 }
-function finishStarGame(){const reward=Math.min(50,starGameScore*2);state.coins+=reward;state.happy=Math.min(100,state.happy+8);state.questDone=true;saveLocal();render();$("modalContent").insertAdjacentHTML("beforeend",`<div class="result-note"><h2>Time's up! 🎉</h2><p>Kamu dapat <b>${reward} koin</b> dan pet makin happy.</p><button class="primary-button" id="gameDone">Ambil hadiah ♡</button></div>`);$("gameDone").onclick=()=>{gainXP(Math.max(5,starGameScore));closeModal();toast(`+${reward} koin dan EXP!`);};}
-function openMemoryGame(){
-  const icons=["🍓","🌸","🐱","🌙","🎀","🍰","⭐","🫧"];const deck=[...icons,...icons].sort(()=>Math.random()-.5);
-  memoryState={deck,opened:[],matched:[],moves:0,locked:false};
-  openModal(`<div class="section-heading"><div><p class="eyebrow">MINI GAME</p><h2>Memory Match 🧠</h2></div><span class="timer-pill">Moves <b id="memoryMoves">0</b></span></div><p>Cari semua pasangan yang sama. Semakin sedikit langkah, semakin banyak EXP!</p><div class="memory-grid" id="memoryGrid">${deck.map((_,i)=>`<button class="memory-card" data-card="${i}">?</button>`).join("")}</div><p id="memoryHint">Temukan 8 pasangan.</p>`);
-  $("memoryGrid").querySelectorAll("[data-card]").forEach(btn=>btn.onclick=()=>flipMemory(Number(btn.dataset.card)));
+
+function localDateKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
-function flipMemory(index){
-  const m=memoryState;if(!m||m.locked||m.opened.includes(index)||m.matched.includes(index))return;
-  m.opened.push(index);const btn=$("memoryGrid").querySelector(`[data-card="${index}"]`);btn.textContent=m.deck[index];btn.classList.add("revealed");
-  if(m.opened.length===2){m.moves++;$("memoryMoves").textContent=m.moves;const [a,b]=m.opened;
-    if(m.deck[a]===m.deck[b]){m.matched.push(a,b);m.opened=[];[a,b].forEach(i=>{const el=$("memoryGrid").querySelector(`[data-card="${i}"]`);el.classList.add("matched");el.disabled=true;});if(m.matched.length===m.deck.length){$("memoryHint").textContent="Semua pasangan ketemu! 🎉";$("modalContent").insertAdjacentHTML("beforeend",`<button class="primary-button" id="memoryReward">Ambil +${Math.max(15,50-m.moves*2)} EXP ♡</button>`);$("memoryReward").onclick=()=>{const xp=Math.max(15,50-m.moves*2);state.questDone=true;gainXP(xp);closeModal();toast(`Keren! +${xp} EXP`);};}}
-    else{m.locked=true;setTimeout(()=>{[a,b].forEach(i=>{const el=$("memoryGrid").querySelector(`[data-card="${i}"]`);if(el){el.textContent="?";el.classList.remove("revealed");}});m.opened=[];m.locked=false;},650);}
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return defaultState();
+    return { ...defaultState(), ...JSON.parse(raw) };
+  } catch {
+    return defaultState();
   }
 }
-async function syncProfile(){
-  if(!client||!user)return;
-  try{
-    const payload={user_id:user.id,player_name:state.playerName,pet_name:state.petName,body_color:state.bodyColor,eye_color:"#594456",screen_color:"#f8c8d9",pet_state:state,updated_at:new Date().toISOString()};
-    const {error}=await client.from("robot_profiles").upsert(payload,{onConflict:"user_id"});
-    if(error)throw error;toast("Progres berhasil disinkronkan ☁");
-  }catch(err){console.warn("Supabase sync error:",err);toast("Tersimpan di perangkat. Sinkronisasi Supabase belum berhasil.");}
+
+let state = loadLocal();
+let currentUser = null;
+let sleeping = false;
+let sleepStart = 0;
+let sleepEnergyStart = 0;
+let sleepInterval = null;
+let activeShopCategory = "hats";
+let authMode = "login";
+let saving = false;
+let saveAgain = false;
+let lastSave = 0;
+
+function clamp(n) {
+  return Math.max(0, Math.min(MAX, Math.round(n)));
 }
-async function signInFlow(){
-  if(!client){toast("Supabase belum dikonfigurasi. Mode lokal tetap bisa dimainkan.");return;}
-  openModal(`<h2>Login akun ♡</h2><p>Login untuk mencoba menyimpan progres ke Supabase. Kamu juga bisa main tanpa akun di perangkat ini.</p><form id="loginForm"><label class="small">Email</label><input id="loginEmail" type="email" required autocomplete="email" placeholder="email@example.com"><label class="small">Password</label><input id="loginPassword" type="password" required autocomplete="current-password" placeholder="Password"><button class="primary-button" type="submit">Login & sync ♡</button></form><button class="secondary-button" id="localMode">Lanjut mode lokal</button><p id="loginMessage"></p>`);
-  $("localMode").onclick=closeModal;
-  $("loginForm").onsubmit=async e=>{e.preventDefault();const btn=$("loginForm").querySelector("button[type=submit]");btn.disabled=true;btn.textContent="LOADING...";try{const {data,error}=await client.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});if(error)throw error;user=data.user;const {data:row,error:readError}=await client.from("robot_profiles").select("*").eq("user_id",user.id).maybeSingle();if(readError)throw readError;if(row&&row.pet_state){state={...cloneDefault(),...row.pet_state};state.playerName=row.player_name||state.playerName;state.petName=row.pet_name||state.petName;}else{await syncProfile();}saveLocal();render();closeModal();toast("Login berhasil! ♡");}catch(err){$("loginMessage").textContent=err.message||"Login gagal";}finally{btn.disabled=false;btn.textContent="Login & sync ♡";}};
+
+function notify(message) {
+  $("notice").textContent = message;
 }
-function bindEvents(){
-  document.body.addEventListener("click",e=>{
-    const action=e.target.closest("[data-action]");if(action){performAction(action.dataset.action);return;}
-    const species=e.target.closest("[data-species]");if(species){chooseSpecies(species.dataset.species);return;}
-    const pick=e.target.closest("[data-pick-species]");if(pick){chooseSpecies(pick.dataset.pickSpecies);return;}
-    const color=e.target.closest("[data-color]");if(color){state.bodyColor=color.dataset.color;saveLocal();render();return;}
-    const shape=e.target.closest("[data-shape]");if(shape){state.shape=shape.dataset.shape;saveLocal();render();return;}
-    const equip=e.target.closest("[data-equip]");if(equip){const [type,id]=equip.dataset.equip.split(":");state[type]=id;saveLocal();render();return;}
-    const buy=e.target.closest("[data-buy]");if(buy){buyItem(buy.dataset.buy);return;}
-    const filter=e.target.closest("[data-filter]");if(filter){currentFilter=filter.dataset.filter;document.querySelectorAll(".filter").forEach(b=>b.classList.toggle("active",b===filter));renderShop();return;}
-    const tab=e.target.closest("[data-tab]");if(tab){$("studio").scrollIntoView({behavior:"smooth"});return;}
-    const scroll=e.target.closest("[data-scroll]");if(scroll){document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active",b===scroll));if(scroll.dataset.scroll==="top")window.scrollTo({top:0,behavior:"smooth"});else $(scroll.dataset.scroll).scrollIntoView({behavior:"smooth"});}
+
+function persistLocal() {
+  localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+}
+
+function saveGame() {
+  persistLocal();
+
+  if (!db || !currentUser) return;
+
+  // Hindari terlalu banyak permintaan saat status berubah cepat.
+  if (Date.now() - lastSave < 800) {
+    saveAgain = true;
+    return;
+  }
+
+  if (saving) {
+    saveAgain = true;
+    return;
+  }
+
+  saving = true;
+  lastSave = Date.now();
+
+  db.from("pet_saves").upsert({
+    user_id: currentUser.id,
+    save_data: state,
+    updated_at: new Date().toISOString()
+  }, { onConflict: "user_id" })
+    .then(({ error }) => {
+      if (error) {
+        console.error("Cloud save error:", error.message);
+        $("cloudStatus").textContent = "Local Save";
+      } else {
+        $("cloudStatus").textContent = "☁ Cloud Saved";
+      }
+    })
+    .finally(() => {
+      saving = false;
+      if (saveAgain) {
+        saveAgain = false;
+        setTimeout(saveGame, 900);
+      }
+    });
+}
+
+function gainXP(amount) {
+  state.xp += amount;
+
+  while (state.xp >= state.level * 20) {
+    state.xp -= state.level * 20;
+    state.level++;
+    state.coins += 10;
+    notify(`Level up! Kamu mencapai level ${state.level}! 🎉`);
+  }
+}
+
+function refreshDailyQuests() {
+  const today = localDateKey();
+
+  if (state.questDate !== today) {
+    state.questDate = today;
+    state.quests = {};
+  }
+
+  for (const q of questTemplates) {
+    if (!state.quests[q.id]) {
+      state.quests[q.id] = { progress: 0, claimed: false };
+    }
+  }
+}
+
+function addQuestProgress(id, amount = 1) {
+  refreshDailyQuests();
+
+  const quest = questTemplates.find(q => q.id === id);
+  const progress = state.quests[id];
+
+  if (!quest || !progress || progress.claimed) return;
+
+  progress.progress = Math.min(quest.target, progress.progress + amount);
+}
+
+function renderStats() {
+  $("petName").textContent = state.name;
+  $("petNameHeading").textContent = state.name;
+  $("speciesLabel").textContent =
+    `${species.find(s => s.id === state.species)?.icon || "🐾"} ` +
+    `${species.find(s => s.id === state.species)?.name || "Pet"}`;
+
+  $("level").textContent = state.level;
+  $("coins").textContent = state.coins;
+  $("xpText").textContent = `${state.xp} / ${state.level * 20} XP`;
+
+  $("energyValue").textContent = `${state.energy}%`;
+  $("hungerValue").textContent = `${state.hunger}%`;
+  $("happyValue").textContent = `${state.happiness}%`;
+
+  $("energyBar").style.width = `${state.energy}%`;
+  $("hungerBar").style.width = `${state.hunger}%`;
+  $("happyBar").style.width = `${state.happiness}%`;
+
+  $("profileLevel").textContent = state.level;
+  $("profileXP").textContent = `${state.xp} XP`;
+  $("ownedCount").textContent =
+    state.ownedWardrobe.length + state.ownedDecorations.length;
+
+  const completed = questTemplates.filter(q =>
+    state.quests[q.id]?.claimed
+  ).length;
+
+  $("questCount").textContent = `${completed}/3`;
+
+  let mood = "Happy";
+  if (state.energy < 25) mood = "Sleepy";
+  else if (state.hunger < 25) mood = "Hungry";
+  else if (state.happiness < 30) mood = "Lonely";
+  else if (state.happiness >= 90) mood = "Super happy";
+
+  $("moodText").textContent = sleeping
+    ? "Mimi is sleeping peacefully... 🌙"
+    : `Mood: ${mood}`;
+
+  $("petSprite").className = `pet-sprite ${state.species}`;
+  $("petSprite").classList.toggle("sleeping", sleeping);
+  $("zzz").hidden = !sleeping;
+
+  const accessory = wardrobe.find(i => i.id === state.equipped);
+  $("petAccessory").textContent = accessory ? accessory.icon : "";
+
+  $("feedBtn").disabled = sleeping;
+  $("playBtn").disabled = sleeping;
+  $("cleanBtn").disabled = sleeping;
+  $("sleepBtn").disabled = sleeping;
+
+  renderRoomDecor();
+  persistLocal();
+}
+
+function renderAll() {
+  refreshDailyQuests();
+  renderStats();
+  renderPets();
+  renderWardrobe();
+  renderRoomCatalog();
+  renderRoomDecor();
+  renderQuests();
+  updateResetText();
+}
+
+function performAction(action) {
+  if (sleeping) return;
+
+  if (action === "feed") {
+    if (state.coins < 3) return notify("Koin kamu belum cukup! 🪙");
+    if (state.hunger >= 100) return notify("Mimi sudah kenyang! 🍓");
+
+    state.coins -= 3;
+    state.hunger = clamp(state.hunger + 25);
+    state.happiness = clamp(state.happiness + 5);
+    addQuestProgress("feed");
+    gainXP(3);
+    notify("Mimi menikmati camilannya! 🍓");
+  }
+
+  if (action === "play") {
+    if (state.energy < 10) return notify("Energi Mimi terlalu rendah. Ajak tidur dulu!");
+    state.energy = clamp(state.energy - 12);
+    state.hunger = clamp(state.hunger - 8);
+    state.happiness = clamp(state.happiness + 20);
+    state.coins += 2;
+    addQuestProgress("play");
+    gainXP(5);
+    notify("Wah, Mimi senang bermain! 🎾 +2 koin");
+  }
+
+  if (action === "clean") {
+    state.happiness = clamp(state.happiness + 10);
+    state.coins += 1;
+    addQuestProgress("clean");
+    gainXP(2);
+    notify("Mimi sekarang bersih dan wangi! 🫧 +1 koin");
+  }
+
+  renderAll();
+  saveGame();
+}
+
+function startSleep() {
+  if (sleeping) return;
+
+  sleeping = true;
+  sleepStart = Date.now();
+  sleepEnergyStart = state.energy;
+
+  $("sleepPanel").hidden = false;
+  $("sceneMessage").textContent = "Sweet dreams, Mimi... zZz";
+  notify("Mimi sedang tidur. Energinya bertambah perlahan.");
+
+  sleepInterval = setInterval(updateSleep, 250);
+  updateSleep();
+}
+
+function updateSleep() {
+  if (!sleeping) return;
+
+  const elapsed = Math.min(30, (Date.now() - sleepStart) / 1000);
+  const progress = elapsed / 30;
+
+  state.energy = clamp(sleepEnergyStart + (100 - sleepEnergyStart) * progress);
+
+  $("sleepCountdown").textContent = `${Math.ceil(30 - elapsed)}s`;
+  $("sleepProgress").style.width = `${progress * 100}%`;
+
+  renderStats();
+
+  if (elapsed >= 30) endSleep(true);
+}
+
+function endSleep(completed = false) {
+  if (!sleeping) return;
+
+  clearInterval(sleepInterval);
+  sleepInterval = null;
+
+  if (!completed) {
+    const elapsed = Math.min(30, (Date.now() - sleepStart) / 1000);
+    const progress = elapsed / 30;
+    state.energy = clamp(sleepEnergyStart + (100 - sleepEnergyStart) * progress);
+  } else {
+    state.energy = 100;
+    state.happiness = clamp(state.happiness + 5);
+    gainXP(5);
+  }
+
+  sleeping = false;
+  $("sleepPanel").hidden = true;
+  $("sleepProgress").style.width = "0%";
+  $("sceneMessage").textContent = "Let's have a lovely day!";
+
+  notify(completed
+    ? "Mimi bangun segar dengan energi penuh! ☀️"
+    : "Mimi dibangunkan lebih awal. ☀️");
+
+  renderAll();
+  saveGame();
+}
+
+function renderPets() {
+  $("petCatalog").innerHTML = species.map(p => {
+    const owned = state.ownedSpecies.includes(p.id);
+    const active = state.species === p.id;
+
+    return `
+      <article class="item-card">
+        <div class="item-art">${p.icon}</div>
+        <h3>${p.name}</h3>
+        <p>${p.description}</p>
+        <div class="item-meta"><span>${active ? "Your pet" : "Pet species"}</span><b>${owned ? "✓" : `🪙 ${p.price}`}</b></div>
+        <button data-species="${p.id}" ${active ? "disabled" : ""}>
+          ${active ? "Currently Selected" : owned ? "Choose Pet" : "Unlock Pet"}
+        </button>
+      </article>`;
+  }).join("");
+
+  $("petCatalog").querySelectorAll("[data-species]").forEach(btn => {
+    btn.addEventListener("click", () => chooseSpecies(btn.dataset.species));
   });
-  $("profileButton").onclick=openNameModal;
-  $("accountButton").onclick=signInFlow;
-  $("modalClose").onclick=closeModal;
-  $("modalBackdrop").addEventListener("click",e=>{if(e.target===$("modalBackdrop"))closeModal();});
-  $("randomizeButton").onclick=randomStyle;
-  $("saveStyleButton").onclick=async()=>{saveLocal();render();if(user)await syncProfile();else toast("Gaya disimpan di perangkat ini ♡");};
-  $("tapGameButton").onclick=openStarGame;
-  $("memoryGameButton").onclick=openMemoryGame;
-  $("soundButton").onclick=()=>{soundOn=!soundOn;$("soundButton").textContent=soundOn?"♫":"♪";toast(soundOn?"Suara diaktifkan":"Suara dimatikan");if(soundOn)say("Hai bestie!");};
-  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
 }
-function applyElapsedTime(){
-  const minutes=Math.floor((Date.now()-(state.lastSeen||Date.now()))/60000);
-  if(minutes>0){state.hunger=Math.max(0,state.hunger-Math.min(20,minutes*.5));state.energy=Math.max(0,state.energy-Math.min(15,minutes*.25));state.clean=Math.max(0,state.clean-Math.min(15,minutes*.3));}
+
+function chooseSpecies(id) {
+  const p = species.find(s => s.id === id);
+  if (!p) return;
+
+  if (!state.ownedSpecies.includes(id)) {
+    if (state.coins < p.price) return notify("Koin kamu belum cukup untuk membuka pet ini.");
+    state.coins -= p.price;
+    state.ownedSpecies.push(id);
+  }
+
+  state.species = id;
+  notify(`${p.name} sekarang menjadi temanmu! 🐾`);
+  renderAll();
+  saveGame();
 }
-function init(){
-  loadLocal();applyElapsedTime();bindEvents();render();saveLocal();
-  setInterval(()=>{state.hunger=Math.max(0,state.hunger-.25);state.clean=Math.max(0,state.clean-.15);saveLocal();render();},60000);
-  if(client){client.auth.getSession().then(({data})=>{if(data?.session?.user){user=data.session.user;}}).catch(()=>{});}
+
+function renderWardrobe() {
+  const items = wardrobe.filter(item => item.category === activeShopCategory);
+
+  $("wardrobeCatalog").innerHTML = items.map(item => {
+    const owned = state.ownedWardrobe.includes(item.id);
+    const equipped = state.equipped === item.id;
+
+    return `
+      <article class="item-card">
+        <div class="item-art">${item.icon}</div>
+        <h3>${item.name}</h3>
+        <p>${item.description}</p>
+        <div class="item-meta"><span>Accessory</span><b>${owned ? "Owned" : `🪙 ${item.price}`}</b></div>
+        <button data-item="${item.id}" class="${equipped ? "equipped" : ""}">
+          ${equipped ? "✓ Equipped" : owned ? "Wear Item" : "Buy Item"}
+        </button>
+      </article>`;
+  }).join("");
+
+  $("wardrobeCatalog").querySelectorAll("[data-item]").forEach(btn => {
+    btn.addEventListener("click", () => useWardrobeItem(btn.dataset.item));
+  });
 }
-init();
+
+function useWardrobeItem(id) {
+  const item = wardrobe.find(i => i.id === id);
+  if (!item) return;
+
+  if (state.equipped === id) {
+    state.equipped = null;
+    notify("Aksesori dilepas.");
+  } else {
+    if (!state.ownedWardrobe.includes(id)) {
+      if (state.coins < item.price) return notify("Koin kamu belum cukup!");
+      state.coins -= item.price;
+      state.ownedWardrobe.push(id);
+    }
+    state.equipped = id;
+    notify(`${item.name} berhasil dipasangkan! 🎀`);
+  }
+
+  renderAll();
+  saveGame();
+}
+
+function renderRoomCatalog() {
+  $("roomCatalog").innerHTML = decorations.map(item => {
+    const owned = state.ownedDecorations.includes(item.id);
+    const placed = state.roomDecorations.includes(item.id);
+
+    return `
+      <article class="item-card">
+        <div class="item-art">${item.icon}</div>
+        <h3>${item.name}</h3>
+        <p>${item.description}</p>
+        <div class="item-meta"><span>Decoration</span><b>${owned ? "Owned" : `🪙 ${item.price}`}</b></div>
+        <button data-decor="${item.id}" class="${placed ? "equipped" : ""}">
+          ${placed ? "✓ In Room" : owned ? "Place / Remove" : "Buy & Place"}
+        </button>
+      </article>`;
+  }).join("");
+
+  $("roomCatalog").querySelectorAll("[data-decor]").forEach(btn => {
+    btn.addEventListener("click", () => toggleDecoration(btn.dataset.decor));
+  });
+}
+
+function toggleDecoration(id) {
+  const item = decorations.find(i => i.id === id);
+  if (!item) return;
+
+  if (!state.ownedDecorations.includes(id)) {
+    if (state.coins < item.price) return notify("Koin kamu belum cukup!");
+    state.coins -= item.price;
+    state.ownedDecorations.push(id);
+    state.roomDecorations.push(id);
+    notify(`${item.name} dibeli dan dipasang! 🪴`);
+  } else if (state.roomDecorations.includes(id)) {
+    state.roomDecorations = state.roomDecorations.filter(x => x !== id);
+    notify(`${item.name} disimpan di koleksi.`);
+  } else {
+    state.roomDecorations.push(id);
+    notify(`${item.name} dipasang di kamar!`);
+  }
+
+  renderAll();
+  saveGame();
+}
+
+function renderRoomDecor() {
+  $("roomDecor").innerHTML = state.roomDecorations.map(id => {
+    const item = decorations.find(d => d.id === id);
+    return item ? `<span title="${item.name}">${item.icon}</span>` : "";
+  }).join("");
+
+  $("roomItems").innerHTML = state.roomDecorations.map(id => {
+    const item = decorations.find(d => d.id === id);
+    return item ? `<span title="${item.name}">${item.icon}</span>` : "";
+  }).join("");
+}
+
+function renderQuests() {
+  refreshDailyQuests();
+
+  $("questCatalog").innerHTML = questTemplates.map(q => {
+    const progress = state.quests[q.id];
+    const done = progress.progress >= q.target;
+    const percent = Math.min(100, progress.progress / q.target * 100);
+
+    return `
+      <article class="quest-card">
+        <div class="quest-top">
+          <h3>${q.name}</h3>
+          <b>🪙 ${q.reward} · ⭐ ${q.xp} XP</b>
+        </div>
+        <p>${q.description}</p>
+        <div class="bar"><span class="fill happy" style="width:${percent}%"></span></div>
+        <div class="quest-top">
+          <small>${progress.progress}/${q.target} completed</small>
+          <small>${progress.claimed ? "Reward claimed" : done ? "Completed!" : "In progress"}</small>
+        </div>
+        <button data-claim="${q.id}" ${!done || progress.claimed ? "disabled" : ""}>
+          ${progress.claimed ? "✓ Reward Claimed" : done ? "Claim Reward" : "Complete Mission"}
+        </button>
+      </article>`;
+  }).join("");
+
+  $("questCatalog").querySelectorAll("[data-claim]").forEach(btn => {
+    btn.addEventListener("click", () => claimQuest(btn.dataset.claim));
+  });
+}
+
+function claimQuest(id) {
+  const q = questTemplates.find(item => item.id === id);
+  const progress = state.quests[id];
+
+  if (!q || !progress || progress.claimed || progress.progress < q.target) return;
+
+  progress.claimed = true;
+  state.coins += q.reward;
+  gainXP(q.xp);
+  notify(`Misi selesai! Kamu mendapat ${q.reward} koin dan ${q.xp} XP. 🎉`);
+
+  renderAll();
+  saveGame();
+}
+
+function updateResetText() {
+  const next = new Date();
+  next.setHours(24, 0, 0, 0);
+  const ms = next - new Date();
+  const hours = Math.floor(ms / 3600000);
+  const minutes = Math.floor((ms % 3600000) / 60000);
+  $("resetTime").textContent =
+    `Misi diperbarui mengikuti tanggal lokal. Reset berikutnya sekitar ${hours} jam ${minutes} menit lagi.`;
+}
+
+function showPage(page) {
+  document.querySelectorAll(".page").forEach(el => {
+    el.classList.toggle("active", el.id === page);
+  });
+
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.page === page);
+  });
+
+  if (page === "pets") renderPets();
+  if (page === "shop") renderWardrobe();
+  if (page === "room") renderRoomCatalog();
+  if (page === "quests") renderQuests();
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+document.querySelectorAll("[data-page]").forEach(btn => {
+  btn.addEventListener("click", event => {
+    event.preventDefault();
+    showPage(btn.dataset.page);
+  });
+});
+
+document.querySelectorAll("[data-shop]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    activeShopCategory = btn.dataset.shop;
+    document.querySelectorAll("[data-shop]").forEach(tab => {
+      tab.classList.toggle("active", tab === btn);
+    });
+    renderWardrobe();
+  });
+});
+
+$("feedBtn").addEventListener("click", () => performAction("feed"));
+$("playBtn").addEventListener("click", () => performAction("play"));
+$("cleanBtn").addEventListener("click", () => performAction("clean"));
+$("sleepBtn").addEventListener("click", startSleep);
+$("wakeBtn").addEventListener("click", () => endSleep(false));
+
+$("resetBtn").addEventListener("click", () => {
+  if (!confirm("Reset progres game di perangkat ini?")) return;
+
+  if (sleepInterval) clearInterval(sleepInterval);
+  sleeping = false;
+  sleepInterval = null;
+  state = defaultState();
+  $("sleepPanel").hidden = true;
+  $("sleepProgress").style.width = "0%";
+
+  renderAll();
+  saveGame();
+  notify("Progres lokal sudah direset.");
+});
+
+// =========================================
+// SUPABASE AUTH + CLOUD SAVE
+// =========================================
+
+async function openAccountDialog() {
+  $("authDialog").showModal();
+  $("authMessage").textContent = "";
+
+  if (currentUser) {
+    $("authTitle").textContent = "Your Account";
+    $("authSubmit").hidden = true;
+    $("toggleAuth").hidden = true;
+    $("logoutBtn").hidden = false;
+    $("authEmail").value = currentUser.email || "";
+    $("authEmail").disabled = true;
+    $("authPassword").hidden = true;
+  } else {
+    $("authTitle").textContent = authMode === "login" ? "Welcome back!" : "Create your account";
+    $("authSubmit").hidden = false;
+    $("authSubmit").textContent = authMode === "login" ? "Login" : "Create Account";
+    $("toggleAuth").hidden = false;
+    $("logoutBtn").hidden = true;
+    $("authEmail").disabled = false;
+    $("authPassword").hidden = false;
+    $("authEmail").value = "";
+    $("authPassword").value = "";
+    $("toggleAuth").textContent = authMode === "login"
+      ? "Belum punya akun? Daftar"
+      : "Sudah punya akun? Login";
+  }
+}
+
+$("accountBtn").addEventListener("click", openAccountDialog);
+$("closeAuth").addEventListener("click", () => $("authDialog").close());
+
+$("toggleAuth").addEventListener("click", () => {
+  authMode = authMode === "login" ? "signup" : "login";
+  openAccountDialog();
+});
+
+$("authForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  if (!db) {
+    $("authMessage").textContent =
+      "Supabase belum dikonfigurasi. Isi URL dan publishable/anon key di app.js.";
+    return;
+  }
+
+  const email = $("authEmail").value.trim();
+  const password = $("authPassword").value;
+  $("authSubmit").disabled = true;
+  $("authMessage").textContent = "Memproses akun...";
+
+  try {
+    let result;
+
+    if (authMode === "signup") {
+      result = await db.auth.signUp({ email, password });
+    } else {
+      result = await db.auth.signInWithPassword({ email, password });
+    }
+
+    if (result.error) throw result.error;
+
+    if (result.data.user && !result.data.session && authMode === "signup") {
+      $("authMessage").textContent =
+        "Akun dibuat. Cek email untuk konfirmasi, lalu login.";
+      return;
+    }
+
+    currentUser = result.data.user;
+    if (currentUser) await loadCloudSave();
+
+    $("authDialog").close();
+    $("accountBtn").textContent = "Account";
+    $("cloudStatus").textContent = "☁ Connected";
+    renderAll();
+    notify("Berhasil login! Progresmu siap disimpan ke cloud. ☁️");
+    saveGame();
+  } catch (error) {
+    $("authMessage").textContent = error.message || "Login gagal.";
+  } finally {
+    $("authSubmit").disabled = false;
+  }
+});
+
+async function loadCloudSave() {
+  if (!db || !currentUser) return;
+
+  const { data, error } = await db
+    .from("pet_saves")
+    .select("save_data")
+    .eq("user_id", currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Cloud load error:", error.message);
+    $("cloudStatus").textContent = "Local Save";
+    notify("Login berhasil, tetapi cloud save belum bisa dimuat. Periksa SQL dan RLS.");
+    return;
+  }
+
+  if (data?.save_data && typeof data.save_data === "object") {
+    state = { ...defaultState(), ...data.save_data };
+    refreshDailyQuests();
+    persistLocal();
+  } else {
+    // Akun baru: salin progres lokal ke cloud.
+    await db.from("pet_saves").upsert({
+      user_id: currentUser.id,
+      save_data: state,
+      updated_at: new Date().toISOString()
+    }, { onConflict: "user_id" });
+  }
+}
+
+$("logoutBtn").addEventListener("click", async () => {
+  if (!db) return;
+
+  await db.auth.signOut();
+  currentUser = null;
+  $("accountBtn").textContent = "Login";
+  $("cloudStatus").textContent = "Local Save";
+  $("authDialog").close();
+  notify("Kamu sudah logout. Progres lokal di perangkat ini tetap tersimpan.");
+});
+
+async function initializeAuth() {
+  if (!db) {
+    $("cloudStatus").textContent = "Local Save";
+    return;
+  }
+
+  $("cloudStatus").textContent = "Connecting...";
+
+  const { data } = await db.auth.getSession();
+  currentUser = data.session?.user || null;
+
+  if (currentUser) {
+    await loadCloudSave();
+    $("accountBtn").textContent = "Account";
+    $("cloudStatus").textContent = "☁ Connected";
+  } else {
+    $("accountBtn").textContent = "Login";
+    $("cloudStatus").textContent = "Local Save";
+  }
+
+  db.auth.onAuthStateChange((_event, session) => {
+    currentUser = session?.user || null;
+    $("accountBtn").textContent = currentUser ? "Account" : "Login";
+    $("cloudStatus").textContent = currentUser ? "☁ Connected" : "Local Save";
+  });
+
+  renderAll();
+}
+
+window.addEventListener("beforeunload", persistLocal);
+
+renderAll();
+initializeAuth();
