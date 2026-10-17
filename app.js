@@ -5,8 +5,8 @@
   dengan data project Supabase milikmu.
 */
 
-const SUPABASE_URL = "PASTE_PROJECT_URL_DI_SINI";
-const SUPABASE_PUBLISHABLE_KEY = "PASTE_PUBLISHABLE_KEY_DI_SINI";
+const SUPABASE_URL = "https://clzaohchgcigvjmasgke.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_uWzC4hMSZcnQjCMQi3OH7w_Xr97SdnF";
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
