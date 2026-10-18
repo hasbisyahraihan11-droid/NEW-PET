@@ -337,3 +337,35 @@ function applyOfflineTime() {
   if(elapsed>0){state.stats.energy=clamp(state.stats.energy-Math.min(20,Math.floor(elapsed/10)));state.stats.hunger=clamp(state.stats.hunger-Math.min(20,Math.floor(elapsed/8)));state.stats.fun=clamp(state.stats.fun-Math.min(15,Math.floor(elapsed/12)));}
 }
 document.addEventListener('DOMContentLoaded',()=>{applyOfflineTime();setupEvents();setupPixelEditor();renderAll();initSupabase();saveLocal();});
+const crownPixels = [
+  "...Y...Y.",
+  "..YYY.YYY",
+  "..YYYYYYY",
+  ".YYYYYYYYY",
+  ".YYYYYYYYY"
+];
+
+function renderPixelCrown() {
+  const crown = document.getElementById("petAccessory");
+  if (!crown) return;
+
+  crown.innerHTML = "";
+  crown.style.gridTemplateColumns = "repeat(9, 8px)";
+  crown.style.gridTemplateRows = "repeat(5, 8px)";
+
+  crownPixels.forEach(row => {
+    [...row].forEach(pixel => {
+      const cell = document.createElement("div");
+      cell.className = "pixel";
+
+      if (pixel === "Y") {
+        cell.style.background = "#ffd83d";
+        cell.style.boxShadow = "inset -2px -2px #d78b27";
+      }
+
+      crown.appendChild(cell);
+    });
+  });
+
+  crown.style.display = "grid";
+}
