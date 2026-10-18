@@ -1,36 +1,259 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#211b3b"><title>Mimi's Pixel World</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#292644">
+  <title>Mimi's Pixel World</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="app.js"></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
-  <div class="shell">
-    <header class="topbar"><div class="brand"><span class="brand-icon">✦</span><div><h1>MIMI'S PIXEL WORLD</h1><p>YOUR LITTLE DIGITAL FRIEND</p></div></div><div class="wallet"><span>🪙</span><b id="coinCount">120</b><span class="coin-label">COINS</span></div></header>
-    <nav class="tabs"><button class="tab active" data-page="home">🏠 HOME</button><button class="tab" data-page="games">🎮 MINI GAMES</button><button class="tab" data-page="studio">🎨 PIXEL STUDIO</button><button class="tab" data-page="shop">🛍 SHOP</button></nav>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-icon">M</div>
+        <div>
+          <h1>MIMI'S PIXEL WORLD</h1>
+          <p>YOUR TINY PIXEL FRIEND ♡</p>
+        </div>
+      </div>
+      <button id="authButton" class="small-btn">LOGIN</button>
+    </header>
+
     <main>
-      <section id="page-home" class="page active">
-        <div class="section-heading"><div><p class="eyebrow">WELCOME BACK!</p><h2>Your pixel buddy</h2></div><span class="online-pill"><i></i> READY TO PLAY</span></div>
-        <div class="home-grid">
-          <article class="panel pet-panel"><div class="panel-top"><span class="tiny-label">PET ROOM / 01</span><button id="changePetBtn" class="small-btn">CHANGE PET ↻</button></div>
-            <div id="room" class="room room-lavender"><div class="window"><span>☀</span><span>· · ·</span></div><div id="roomDeco" class="room-deco" aria-hidden="true">✿</div><div class="shelf"></div><div class="pet-stage"><div id="petSprite" class="pet-sprite cat" aria-label="Pixel pet"></div><div id="petAccessory" class="pet-accessory" aria-hidden="true"></div><div class="shadow"></div></div><div class="room-floor"></div><div id="sleepOverlay" class="sleep-overlay" hidden><div class="sleep-card"><div class="sleep-moon">☾</div><b>MIMI SEDANG TIDUR</b><span id="sleepCountdown">00:30</span><div class="progress"><i id="sleepProgress"></i></div><small>Shhh... biarkan Mimi beristirahat.</small><button id="cancelSleepBtn" class="small-btn">BANGUNKAN</button></div></div></div>
-            <div class="pet-name-row"><div><h3 id="petName">Mimi</h3><p id="petMood">Mimi lagi happy! ♡</p></div><button id="renameBtn" class="icon-btn" title="Ganti nama">✎</button></div>
-            <div class="pet-picker" id="petPicker"><button class="pet-choice selected" data-pet="cat">🐱 <span>CAT</span></button><button class="pet-choice" data-pet="dog">🐶 <span>DOG</span></button><button class="pet-choice" data-pet="bunny">🐰 <span>BUNNY</span></button><button class="pet-choice" data-pet="slime">🟢 <span>SLIME</span></button></div>
-            <div class="care-actions"><button id="feedBtn" class="care-btn pink"><span>🍓</span><b>FEED</b><small>+ HUNGER</small></button><button id="playBtn" class="care-btn blue"><span>🧸</span><b>PLAY</b><small>+ FUN</small></button><button id="cleanBtn" class="care-btn yellow"><span>🧼</span><b>CLEAN</b><small>+ HYGIENE</small></button><button id="sleepBtn" class="care-btn purple"><span>🌙</span><b>SLEEP</b><small>30 SECONDS</small></button></div>
-          </article>
-          <aside class="side-column"><article class="panel stats-panel"><div class="panel-title"><h3>📊 PET STATUS</h3><span class="tiny-label">LIVE</span></div><div class="stat" data-stat="hunger"><div class="stat-label"><span>🍓 HUNGER</span><b id="hungerValue">78%</b></div><div class="meter"><i id="hungerBar" class="fill pink-fill" style="width:78%"></i></div></div><div class="stat" data-stat="energy"><div class="stat-label"><span>⚡ ENERGY</span><b id="energyValue">82%</b></div><div class="meter"><i id="energyBar" class="fill yellow-fill" style="width:82%"></i></div></div><div class="stat" data-stat="fun"><div class="stat-label"><span>🎮 FUN</span><b id="funValue">70%</b></div><div class="meter"><i id="funBar" class="fill blue-fill" style="width:70%"></i></div></div><div class="stat" data-stat="hygiene"><div class="stat-label"><span>🫧 HYGIENE</span><b id="hygieneValue">90%</b></div><div class="meter"><i id="hygieneBar" class="fill green-fill" style="width:90%"></i></div></div><p class="hint">Jaga semua bar tetap tinggi biar Mimi tetap ceria.</p></article>
-            <article class="panel quest-panel"><div class="panel-title"><h3>📋 DAILY QUEST</h3><span class="tiny-label">REWARDS</span></div><div class="quest"><span class="quest-icon">🍓</span><div><b>Feed your pet</b><small>Kasih makan sekali</small></div><strong id="questFeed">+10</strong></div><div class="quest"><span class="quest-icon">🎮</span><div><b>Play a mini game</b><small>Mainkan satu game</small></div><strong id="questGame">+20</strong></div><div class="quest"><span class="quest-icon">🧼</span><div><b>Keep it clean</b><small>Bersihkan Mimi</small></div><strong id="questClean">+10</strong></div></article>
-            <article class="panel cloud-panel"><div class="panel-title"><h3>☁ CLOUD SAVE</h3><span id="cloudStatus" class="cloud-status">LOCAL MODE</span></div><p>Masuk untuk menyimpan progres ke Supabase dan membukanya di perangkat lain.</p><form id="authForm"><input id="emailInput" type="email" placeholder="Email kamu" autocomplete="email" required><input id="passwordInput" type="password" placeholder="Password (min. 6 karakter)" autocomplete="current-password" minlength="6" required><div class="auth-actions"><button type="submit" id="loginBtn" class="primary-btn">LOGIN</button><button type="button" id="signupBtn" class="small-btn">DAFTAR</button></div></form><button id="logoutBtn" class="small-btn full" hidden>LOGOUT</button><button id="saveCloudBtn" class="small-btn full">SAVE KE CLOUD</button><p id="authMessage" class="auth-message" role="status"></p></article></aside>
+      <section class="welcome-row">
+        <div>
+          <p class="eyebrow">WELCOME BACK, PLAYER!</p>
+          <h2>Halo, <span id="playerName">Player</span>!</h2>
+          <p class="muted">Teman pixel-mu menunggumu bermain.</p>
+        </div>
+        <div class="coin-pill">● <span id="coins">100</span> COINS</div>
+      </section>
+
+      <nav class="main-nav">
+        <button class="nav-btn active" data-page="home">⌂ HOME</button>
+        <button class="nav-btn" data-page="wardrobe">♢ WARDROBE</button>
+        <button class="nav-btn" data-page="games">★ MINI GAMES</button>
+        <button class="nav-btn" data-page="shop">▣ SHOP</button>
+      </nav>
+
+      <section id="homePage" class="page active-page">
+        <div class="game-layout">
+          <div class="game-console panel">
+            <div class="panel-heading">
+              <span>MY LITTLE ROOM</span>
+              <span class="live-dot">● ONLINE</span>
+            </div>
+
+            <div id="roomScene" class="room-scene room-mint">
+              <div class="room-window">
+                <div class="window-sky">
+                  <span class="pixel-cloud"></span>
+                  <span class="pixel-sun"></span>
+                </div>
+                <div class="window-frame"></div>
+              </div>
+              <div class="room-shelf"></div>
+              <div id="roomDeco" class="room-deco"></div>
+              <div class="floor"></div>
+
+              <div id="sleepBubble" class="sleep-bubble" hidden>ZZZ</div>
+              <div id="petStage" class="pet-stage">
+                <div id="petAccessory" class="pixel-accessory"></div>
+                <div id="petSprite" class="pixel-pet" aria-label="Pixel pet"></div>
+                <div class="pet-shadow"></div>
+              </div>
+              <div class="room-label" id="roomLabel">MIMI'S ROOM</div>
+            </div>
+
+            <div class="pet-name-row">
+              <div>
+                <h3 id="petName">Mimi</h3>
+                <p id="petMood" class="muted">Feeling happy!</p>
+              </div>
+              <button id="renameButton" class="outline-btn">✎ RENAME</button>
+            </div>
+
+            <div class="sleep-panel">
+              <div>
+                <strong id="sleepStatus">☾ Sleep schedule</strong>
+                <p id="sleepText" class="muted">Mimi masih terjaga.</p>
+              </div>
+              <button id="sleepButton" class="action-btn">☾ SLEEP</button>
+            </div>
+            <div class="sleep-track"><div id="sleepProgress"></div></div>
+
+            <div class="care-grid">
+              <button class="care-btn" data-care="feed"><span>♥</span> FEED</button>
+              <button class="care-btn" data-care="play"><span>♫</span> PLAY</button>
+              <button class="care-btn" data-care="clean"><span>✦</span> CLEAN</button>
+              <button class="care-btn" data-care="heal"><span>✚</span> CARE</button>
+            </div>
+          </div>
+
+          <aside class="side-column">
+            <div class="panel stats-panel">
+              <div class="panel-heading"><span>STATUS</span><span>♡</span></div>
+              <div class="stat-row">
+                <div class="stat-label"><span>🍓 Hunger</span><b id="hungerValue">80%</b></div>
+                <div class="stat-track"><div id="hungerBar" class="stat-fill pink"></div></div>
+              </div>
+              <div class="stat-row">
+                <div class="stat-label"><span>♡ Happiness</span><b id="happinessValue">80%</b></div>
+                <div class="stat-track"><div id="happinessBar" class="stat-fill purple"></div></div>
+              </div>
+              <div class="stat-row">
+                <div class="stat-label"><span>⚡ Energy</span><b id="energyValue">100%</b></div>
+                <div class="stat-track"><div id="energyBar" class="stat-fill yellow"></div></div>
+              </div>
+              <div class="stat-row">
+                <div class="stat-label"><span>✿ Clean</span><b id="cleanValue">100%</b></div>
+                <div class="stat-track"><div id="cleanBar" class="stat-fill blue"></div></div>
+              </div>
+              <div class="level-card">
+                <div class="level-top"><b>LEVEL <span id="levelValue">1</span></b><span><span id="expValue">0</span>/100 EXP</span></div>
+                <div class="stat-track"><div id="expBar" class="stat-fill green"></div></div>
+              </div>
+            </div>
+
+            <div class="panel quest-panel">
+              <div class="panel-heading"><span>DAILY QUEST</span><span>★</span></div>
+              <div class="quest-item">
+                <span class="quest-icon">♥</span>
+                <div><b>Take care of Mimi</b><p id="careQuestText">Care actions: 0/3</p></div>
+              </div>
+              <div class="quest-item">
+                <span class="quest-icon">🎮</span>
+                <div><b>Play a mini-game</b><p id="gameQuestText">Games played: 0/1</p></div>
+              </div>
+              <button id="claimQuestButton" class="action-btn full-btn">CLAIM REWARD +25</button>
+            </div>
+
+            <div class="panel room-panel">
+              <div class="panel-heading"><span>ROOM THEME</span></div>
+              <div class="theme-options">
+                <button class="theme-btn selected" data-theme="mint">MINT</button>
+                <button class="theme-btn" data-theme="pink">PINK</button>
+                <button class="theme-btn" data-theme="night">NIGHT</button>
+              </div>
+            </div>
+          </aside>
         </div>
       </section>
-      <section id="page-games" class="page"><div class="section-heading"><div><p class="eyebrow">PLAY & EARN</p><h2>Mini Game Arcade</h2></div><span class="online-pill">🪙 WIN COINS</span></div><div class="game-grid"><article class="panel game-card"><div class="game-art stars-art"><span>✦</span><span>★</span><span>✧</span></div><div class="game-info"><span class="tiny-label">GAME 01</span><h3>Catch the Star</h3><p>Tap bintang sebanyak mungkin sebelum waktu habis!</p><div class="game-meta"><span>⏱ 20 SEC</span><span>🏆 UP TO 40 COINS</span></div><button id="startCatchBtn" class="primary-btn">START GAME ▶</button></div></article><article class="panel game-card"><div class="game-art memory-art"><span>♥</span><span>◆</span><span>★</span><span>●</span></div><div class="game-info"><span class="tiny-label">GAME 02</span><h3>Memory Match</h3><p>Cari pasangan ikon pixel yang sama. Semakin sedikit langkah, semakin bagus!</p><div class="game-meta"><span>🧠 MEMORY</span><span>🏆 UP TO 50 COINS</span></div><button id="startMemoryBtn" class="primary-btn">START GAME ▶</button></div></article></div><article class="panel game-board-panel"><div class="panel-title"><h3 id="gameTitle">ARCADE SCREEN</h3><span id="gameTimer" class="tiny-label">READY?</span></div><div id="gameBoard" class="game-board"><div class="empty-game"><div>▣</div><b>PILIH GAME UNTUK MULAI</b><p>Hadiah koin bisa dipakai beli dekorasi dan aksesori.</p></div></div><p id="gameMessage" class="game-message" role="status"></p></article></section>
-      <section id="page-studio" class="page"><div class="section-heading"><div><p class="eyebrow">MAKE IT YOURS</p><h2>Pixel Accessory Studio</h2></div><span class="online-pill">8 × 8 PIXEL GRID</span></div><div class="studio-grid"><article class="panel editor-panel"><div class="panel-title"><h3>🧩 CUSTOM ACCESSORY</h3><span class="tiny-label">PIXEL ART</span></div><label class="field-label" for="designName">Nama aksesori</label><input id="designName" class="text-input" maxlength="18" value="My Pixel Crown" placeholder="Nama aksesori"><div class="editor-tools"><label>Warna <input id="pixelColor" type="color" value="#ff5e9c"></label><button id="eraserBtn" class="small-btn">⌫ ERASER</button><button id="clearGridBtn" class="small-btn">CLEAR</button></div><div id="pixelGrid" class="pixel-grid" role="grid" aria-label="Editor aksesori 8 kali 8"></div><div class="editor-actions"><button id="saveDesignBtn" class="primary-btn">SAVE DESIGN</button><button id="wearDesignBtn" class="small-btn">WEAR IT</button></div><p class="hint">Pilih warna, lalu tap kotak untuk menggambar. Desain tersimpan di perangkat dan ikut cloud save jika login.</p></article><article class="panel preview-panel"><div class="panel-title"><h3>✨ PREVIEW</h3><span class="tiny-label">LIVE</span></div><div class="preview-stage"><div id="accessoryPreview" class="accessory-preview"></div></div><div class="saved-designs"><h4>MY DESIGNS</h4><div id="designList" class="design-list"><p class="hint">Belum ada desain. Buat aksesori pertamamu!</p></div></div><div class="equipped-box"><span>AKSESORI DIPAKAI</span><b id="equippedLabel">None</b><button id="removeAccessoryBtn" class="small-btn">REMOVE</button></div></article></div></section>
-      <section id="page-shop" class="page"><div class="section-heading"><div><p class="eyebrow">PIXEL BOUTIQUE</p><h2>Shop & Room Decor</h2></div><span class="online-pill">🪙 <b id="shopCoins">120</b> COINS</span></div><div class="shop-tabs"><button class="shop-tab active" data-shop="accessories">ACCESSORIES</button><button class="shop-tab" data-shop="decor">ROOM DECOR</button><button class="shop-tab" data-shop="rooms">ROOM THEMES</button></div><div id="shopGrid" class="shop-grid"></div></section>
-    </main><footer><span>© MIMI'S PIXEL WORLD</span><span>MADE WITH ♥ AND PIXELS</span></footer>
+
+      <section id="wardrobePage" class="page">
+        <div class="section-heading">
+          <div><p class="eyebrow">MAKE IT YOURS</p><h2>Pixel Wardrobe</h2></div>
+          <p class="muted">Pilih pet dan pakai aksesori favoritmu.</p>
+        </div>
+
+        <div class="wardrobe-layout">
+          <div class="panel wardrobe-preview">
+            <div class="panel-heading"><span>PREVIEW</span><span>PIXEL LAB</span></div>
+            <div class="preview-stage">
+              <div id="wardrobeAccessory" class="pixel-accessory"></div>
+              <div id="wardrobePet" class="pixel-pet"></div>
+            </div>
+            <label class="field-label" for="petSelect">CHARACTER</label>
+            <select id="petSelect" class="input-field">
+              <option value="cat">Pixel Cat</option>
+              <option value="bunny">Pixel Bunny</option>
+              <option value="dog">Pixel Dog</option>
+              <option value="slime">Pixel Slime</option>
+            </select>
+            <label class="field-label" for="petColor">BODY COLOR</label>
+            <input id="petColor" type="color" value="#ffb6ce" class="color-input">
+          </div>
+
+          <div class="panel wardrobe-items">
+            <div class="panel-heading"><span>ACCESSORIES</span><span id="accessoryCount">0 OWNED</span></div>
+            <div id="accessoryList" class="accessory-list"></div>
+
+            <div class="divider"></div>
+            <div class="panel-heading"><span>CREATE YOUR OWN</span><span>PIXEL EDITOR</span></div>
+            <p class="muted small-copy">Ketuk kotak untuk menggambar aksesori pixel buatanmu sendiri.</p>
+            <div class="editor-tools">
+              <input id="editorColor" type="color" value="#ffd84d" aria-label="Warna pixel">
+              <button id="editorErase" class="outline-btn">ERASER</button>
+              <button id="editorClear" class="outline-btn">CLEAR</button>
+            </div>
+            <div id="pixelEditor" class="pixel-editor"></div>
+            <label class="field-label" for="customAccessoryName">ACCESSORY NAME</label>
+            <input id="customAccessoryName" class="input-field" maxlength="20" placeholder="Contoh: Star Crown">
+            <button id="saveCustomAccessory" class="action-btn full-btn">SAVE CUSTOM ACCESSORY</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="gamesPage" class="page">
+        <div class="section-heading">
+          <div><p class="eyebrow">PLAY & EARN</p><h2>Mini Games Arcade</h2></div>
+          <p class="muted">Menang game untuk mendapatkan koin dan EXP.</p>
+        </div>
+        <div class="games-grid">
+          <article class="panel game-card">
+            <div class="game-icon">★</div>
+            <h3>Catch the Star</h3>
+            <p class="muted">Ketuk bintang sebanyak mungkin sebelum waktu habis.</p>
+            <div class="game-score">TIME <b id="catchTimer">15</b>s · SCORE <b id="catchScore">0</b></div>
+            <div id="catchArena" class="catch-arena">
+              <span class="arena-hint">Tekan START untuk bermain!</span>
+            </div>
+            <button id="startCatch" class="action-btn full-btn">START GAME</button>
+          </article>
+
+          <article class="panel game-card">
+            <div class="game-icon">▦</div>
+            <h3>Memory Match</h3>
+            <p class="muted">Buka kartu dan temukan semua pasangan yang sama.</p>
+            <div class="game-score">PAIRS <b id="memoryPairs">0</b>/6</div>
+            <div id="memoryBoard" class="memory-board"></div>
+            <button id="startMemory" class="action-btn full-btn">START GAME</button>
+          </article>
+        </div>
+      </section>
+
+      <section id="shopPage" class="page">
+        <div class="section-heading">
+          <div><p class="eyebrow">SPEND YOUR COINS</p><h2>Pixel Shop</h2></div>
+          <p class="muted">Beli aksesori dan dekorasi kamar.</p>
+        </div>
+        <div class="panel">
+          <div class="panel-heading"><span>ACCESSORIES</span><span>COIN SHOP</span></div>
+          <div id="shopAccessories" class="shop-grid"></div>
+        </div>
+        <div class="panel shop-room-panel">
+          <div class="panel-heading"><span>ROOM DECORATIONS</span><span>MAKE IT COZY</span></div>
+          <div id="shopDecorations" class="shop-grid"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>MIMI'S PIXEL WORLD</span>
+      <span>MADE WITH ♡ AND PIXELS</span>
+      <span id="saveStatus">LOCAL SAVE READY</span>
+    </footer>
   </div>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <dialog id="nameDialog" class="modal"><form method="dialog"><div class="modal-icon">✎</div><h3>Ganti nama pet</h3><input id="newPetName" class="text-input" maxlength="18" placeholder="Nama Mimi"><div class="modal-actions"><button class="small-btn" value="cancel">BATAL</button><button id="confirmRenameBtn" class="primary-btn" value="ok">SIMPAN</button></div></form></dialog>
-</body></html>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <dialog id="authDialog" class="modal">
+    <form id="authForm" class="modal-content">
+      <button type="button" id="closeAuth" class="modal-close">×</button>
+      <p class="eyebrow">CLOUD SAVE</p>
+      <h2 id="authTitle">Login to Mimi</h2>
+      <p class="muted">Login untuk menyimpan progres di akun Supabase. Tanpa login, game tetap tersimpan di perangkat ini.</p>
+      <label class="field-label" for="authEmail">EMAIL</label>
+      <input id="authEmail" type="email" class="input-field" autocomplete="email" required>
+      <label class="field-label" for="authPassword">PASSWORD</label>
+      <input id="authPassword" type="password" class="input-field" autocomplete="current-password" minlength="6" required>
+      <button id="submitAuth" type="submit" class="action-btn full-btn">LOGIN</button>
+      <button id="toggleAuthMode" type="button" class="text-btn">Belum punya akun? Daftar</button>
+      <button id="logoutButton" type="button" class="outline-btn full-btn" hidden>LOGOUT</button>
+    </form>
+  </dialog>
+</body>
+</html>
