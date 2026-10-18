@@ -1,6 +1,6 @@
 /* Mimi's Pixel World — replace SUPABASE_URL and SUPABASE_ANON_KEY with your own project values. */
-const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_PUBLISHABLE_OR_ANON_KEY';
+const SUPABASE_URL = 'https://clzaohchgcigvjmasgke.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_uWzC4hMSZcnQjCMQi3OH7w_Xr97SdnF';
 const SAVE_KEY = 'mimi-pixel-world-save-v1';
 const $ = (id) => document.getElementById(id);
 const clamp = (n, min = 0, max = 100) => Math.max(min, Math.min(max, Math.round(n)));
