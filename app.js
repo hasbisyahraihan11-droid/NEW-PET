@@ -1,6 +1,6 @@
 /* MIMI PIXEL PET — edit SUPABASE_URL and SUPABASE_ANON_KEY below */
-const SUPABASE_URL = "PASTE_YOUR_SUPABASE_PROJECT_URL_HERE";
-const SUPABASE_ANON_KEY = "PASTE_YOUR_SUPABASE_ANON_KEY_HERE";
+const SUPABASE_URL = "https://clzaohchgcigvjmasgke.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNsemFvaGNoZ2NpZ3ZqbWFzZ2tlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIyMjE1MjYsImV4cCI6MjEwNzc5NzUyNn0.D2BBnAqRKavJ6wpHuKrTjfw3BIRHgf63pEcdp79YYb4";
 const STORAGE_BUCKET = "accessories";
 
 const $ = (id) => document.getElementById(id);
