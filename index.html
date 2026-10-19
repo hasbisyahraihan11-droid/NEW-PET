@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#17152e">
+  <title>Mimi Pixel Pet</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-icon">M</span><div><strong>MIMI</strong><small>PIXEL PET CLUB</small></div></div>
+      <div class="top-stats"><span class="coin-pill">● <b id="coinBalance">0</b></span><button id="accountBtn" class="icon-btn" aria-label="Akun">☻</button></div>
+    </header>
+
+    <main>
+      <section id="authPanel" class="panel auth-panel">
+        <div class="eyebrow">WELCOME TO YOUR LITTLE WORLD</div>
+        <h1>Rawat teman<br><span>pixel</span> kamu.</h1>
+        <p class="muted">Masuk atau buat akun untuk menyimpan progres Mimi di perangkat mana pun.</p>
+        <label>Email<input id="emailInput" type="email" autocomplete="email" placeholder="email@contoh.com"></label>
+        <label>Password<input id="passwordInput" type="password" autocomplete="current-password" minlength="6" placeholder="Minimal 6 karakter"></label>
+        <div class="button-row"><button id="loginBtn" class="btn primary">Masuk</button><button id="signupBtn" class="btn secondary">Daftar</button></div>
+        <p id="authMessage" class="message" role="status">Kamu juga bisa mencoba mode tamu tanpa menyimpan progres online.</p>
+        <button id="guestBtn" class="text-btn">Main mode tamu ↗</button>
+      </section>
+
+      <section id="gamePanel" hidden>
+        <div class="hero-grid">
+          <section class="pet-card panel">
+            <div class="room-header"><div><span class="eyebrow">MY LITTLE ROOM</span><h2 id="petGreeting">Hai, aku Mimi!</h2></div><span id="weatherBadge" class="weather-badge">☀ DAY</span></div>
+            <div id="room" class="room day">
+              <div class="window"><div class="sun"></div><div class="cloud cloud-a"></div><div class="cloud cloud-b"></div></div>
+              <div class="shelf"><span>✿</span><span>▥</span><span>✦</span></div>
+              <div class="floor"></div>
+              <div id="petSprite" class="pet-sprite idle" aria-label="Mimi, robot peliharaan pixel">
+                <div class="pet-shadow"></div>
+                <div class="antenna"><i></i></div>
+                <div class="pet-ear ear-left"></div><div class="pet-ear ear-right"></div>
+                <div class="pet-body">
+                  <div class="pet-face">
+                    <i class="eye eye-left"></i><i class="eye eye-right"></i><i class="cheek cheek-left"></i><i class="cheek cheek-right"></i><i class="mouth"></i>
+                  </div>
+                  <div class="body-panel"><span>♥</span></div>
+                  <div class="arm arm-left"></div><div class="arm arm-right"></div>
+                </div>
+                <div class="leg leg-left"></div><div class="leg leg-right"></div>
+                <div id="equippedOverlay" class="equipped-overlay"></div>
+                <div id="speechBubble" class="speech-bubble">Hai! Main yuk!</div>
+              </div>
+              <div class="bed"><div class="pillow"></div><div class="blanket"></div></div>
+              <div class="room-plants">♣</div>
+            </div>
+            <div class="pet-name-row"><div><strong>Mimi</strong><span class="muted tiny">Robot kecil kesayanganmu</span></div><span id="levelBadge" class="level-badge">LV 1</span></div>
+            <div class="exp-track"><div id="expBar" class="exp-fill"></div></div>
+            <div class="stats">
+              <div class="stat"><div><span>🍙</span><small>Lapar</small><b id="hungerValue">80</b></div><div class="meter"><i id="hungerBar"></i></div></div>
+              <div class="stat"><div><span>💗</span><small>Bahagia</small><b id="happyValue">80</b></div><div class="meter"><i id="happyBar"></i></div></div>
+              <div class="stat"><div><span>⚡</span><small>Energi</small><b id="energyValue">100</b></div><div class="meter"><i id="energyBar"></i></div></div>
+              <div class="stat"><div><span>🫧</span><small>Bersih</small><b id="cleanValue">100</b></div><div class="meter"><i id="cleanBar"></i></div></div>
+            </div>
+            <div class="actions">
+              <button class="action-btn" data-action="feed"><span>🍙</span><b>Makan</b></button>
+              <button class="action-btn" data-action="play"><span>🎾</span><b>Elus</b></button>
+              <button class="action-btn" data-action="clean"><span>🫧</span><b>Bersihkan</b></button>
+              <button class="action-btn" data-action="sleep"><span>🌙</span><b id="sleepLabel">Tidur</b></button>
+            </div>
+            <p id="gameMessage" class="message" aria-live="polite">Mimi senang kamu datang!</p>
+          </section>
+
+          <aside class="side-column">
+            <section class="panel compact-panel">
+              <div class="section-title"><div><span class="eyebrow">TODAY</span><h3>Misi harian</h3></div><span class="tiny badge">+ COINS</span></div>
+              <div id="missionList" class="mission-list"></div>
+            </section>
+            <section class="panel compact-panel">
+              <div class="section-title"><div><span class="eyebrow">QUICK FUN</span><h3>Mini-game</h3></div><span>🎮</span></div>
+              <p class="muted tiny">Tebak arah Mimi. Jawaban benar dapat koin!</p>
+              <div class="guess-buttons"><button class="btn secondary" data-guess="kiri">← Kiri</button><button class="btn secondary" data-guess="kanan">Kanan →</button></div>
+              <p id="miniGameMessage" class="message">Pilih arah yang benar.</p>
+            </section>
+          </aside>
+        </div>
+
+        <section class="panel shop-panel">
+          <div class="section-title"><div><span class="eyebrow">MAKE IT YOURS</span><h2>Lemari aksesori</h2></div><span class="tiny muted">Koleksi & toko</span></div>
+          <div class="tabs"><button class="tab active" data-tab="shop">Toko</button><button class="tab" data-tab="inventory">Punyaku</button><button class="tab" data-tab="admin" id="adminTab" hidden>Admin studio</button></div>
+          <div id="shopView" class="accessory-grid"></div>
+          <div id="inventoryView" class="accessory-grid" hidden></div>
+          <div id="adminView" hidden>
+            <form id="accessoryForm" class="admin-form">
+              <h3>Upload aksesori baru</h3>
+              <p class="muted tiny">PNG transparan paling cocok untuk pixel-art. Kamu bisa atur ukuran dan titik pemasangan.</p>
+              <label>Nama aksesori<input id="accName" required maxlength="50" placeholder="Contoh: Mahkota bintang"></label>
+              <div class="form-two"><label>Harga koin<input id="accPrice" type="number" min="0" value="100" required></label><label>Level minimum<input id="accLevel" type="number" min="1" value="1" required></label></div>
+              <div class="form-two"><label>Kategori<select id="accCategory"><option value="Kepala">Kepala</option><option value="Wajah">Wajah</option><option value="Badan">Badan</option><option value="Lainnya">Lainnya</option></select></label><label>Ukuran (%)<input id="accScale" type="number" min="10" max="180" value="55" required></label></div>
+              <div class="form-two"><label>Posisi kiri (%)<input id="accX" type="number" min="-20" max="120" value="50" required></label><label>Posisi atas (%)<input id="accY" type="number" min="-20" max="120" value="12" required></label></div>
+              <label>Foto aksesori<input id="accImage" type="file" accept="image/png,image/webp,image/jpeg" required></label>
+              <div class="button-row"><button class="btn primary" type="submit">Upload & publikasikan</button></div>
+              <p id="adminMessage" class="message"></p>
+            </form>
+            <h3 class="admin-list-title">Kelola katalog</h3>
+            <div id="adminCatalog" class="admin-catalog"></div>
+          </div>
+        </section>
+      </section>
+    </main>
+    <footer><span>✦ MIMI PIXEL PET CLUB</span><span id="saveStatus">Mode tamu</span></footer>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+</body>
+</html>
